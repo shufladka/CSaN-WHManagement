@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'pages/auth/sign_in/signInWidget.dart';
@@ -14,6 +15,8 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
+
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -24,6 +27,13 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         // Здесь вы можете настроить тему приложения, если необходимо
         primarySwatch: Colors.blue,
+        pageTransitionsTheme: const PageTransitionsTheme(builders: {
+          TargetPlatform.android: NoTransitionsPageTransitionsBuilder(),
+          TargetPlatform.iOS: NoTransitionsPageTransitionsBuilder(),
+          TargetPlatform.linux: NoTransitionsPageTransitionsBuilder(),
+          TargetPlatform.macOS: NoTransitionsPageTransitionsBuilder(),
+          TargetPlatform.windows: NoTransitionsPageTransitionsBuilder(),
+        }),
       ),
       initialRoute: '/', // Задайте вашу начальную страницу, если нужно
       routes: {
@@ -33,5 +43,20 @@ class MyApp extends StatelessWidget {
         'lobby':  (context) => const LobbyWidget(), // маршруты
       },
     );
+  }
+}
+
+class NoTransitionsPageTransitionsBuilder extends PageTransitionsBuilder {
+  const NoTransitionsPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+      PageRoute<T> route,
+      BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation,
+      Widget child,
+      ) {
+    return child; // Отключаем анимации
   }
 }

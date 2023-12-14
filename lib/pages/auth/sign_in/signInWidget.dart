@@ -453,7 +453,7 @@ class _SignInWidgetState extends State<SignInWidget> {
           child: InkWell(
             onTap: () {
               //Navigator.of(context).pushNamed('sign_reset');
-              Navigator.of(context).pushNamed('menu');
+              Navigator.of(context).pushNamed('lobby');
             },
             child: Container(
               color: Colors.white, // Белый фон
