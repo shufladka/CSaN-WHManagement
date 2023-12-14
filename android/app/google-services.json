@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "652048446070",
+    "project_id": "csan-poit",
+    "storage_bucket": "csan-poit.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:652048446070:android:ca0b2650020e071d982557",
+        "android_client_info": {
+          "package_name": "by.bsuir.csan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNEqjxThEXOq3z3gWFrgqGMYNMMmKxBtA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
