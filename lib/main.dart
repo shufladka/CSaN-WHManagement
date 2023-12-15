@@ -4,7 +4,7 @@ import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'pages/auth/sign_in_page.dart';
 import 'pages/auth/sign_up_page.dart';
-import 'pages/home/lobby/lobby_widget.dart';
+import 'pages/home/lobby_page.dart';
 import 'pages/auth/pass_reset_page.dart';
 
 Future<void> main() async {
@@ -38,11 +38,11 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/', // Задайте вашу начальную страницу, если нужно
       routes: {
-        '/': (context) => const SignInWidget(), // маршруты
-        'sign_in': (context) => const SignInWidget(), // вход в приложение
-        'sign_up': (context) => const SignUpWidget(), // регистрация
-        'pass_reset': (context) => const PassResetWidget(), // сброс пароля
-        'lobby':  (context) => const LobbyWidget(), // лобби приложения
+        '/': (context) => const SignInPage(), // маршруты
+        'sign_in': (context) => const SignInPage(), // вход в приложение
+        'sign_up': (context) => const SignUpPage(), // регистрация
+        'pass_reset': (context) => const PassResetPage(), // сброс пароля
+        'lobby':  (context) => const LobbyPage(), // лобби приложения
       },
     );
   }

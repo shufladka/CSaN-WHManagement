@@ -2,14 +2,14 @@ import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class PassResetPage extends StatefulWidget {
-  const PassResetPage({Key? key}) : super(key: key);
+class LobbyPage extends StatefulWidget {
+  const LobbyPage({Key? key}) : super(key: key);
 
   @override
-  _PassResetPageState createState() => _PassResetPageState();
+  _LobbyPageState createState() => _LobbyPageState();
 }
 
-class _PassResetPageState extends State<PassResetPage> {
+class _LobbyPageState extends State<LobbyPage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 

@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:csan/service/auth/firebase_auth_service.dart';
 
-class SignUpWidget extends StatefulWidget {
-  const SignUpWidget({Key? key}) : super(key: key);
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({Key? key}) : super(key: key);
 
   @override
-  _SignUpWidgetState createState() => _SignUpWidgetState();
+  _SignUpPageState createState() => _SignUpPageState();
 }
 
-class _SignUpWidgetState extends State<SignUpWidget> {
+class _SignUpPageState extends State<SignUpPage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>(); // Ключ формы
@@ -120,9 +120,7 @@ class _SignUpWidgetState extends State<SignUpWidget> {
 
     return false;
   }
-
-
-
+  
   @override
   Widget build(BuildContext context) {
     return Title(
@@ -148,7 +146,6 @@ class _SignUpWidgetState extends State<SignUpWidget> {
       ),
     );
   }
-
 
   Widget buildSignUpContainer(BuildContext context) {
     return Container(

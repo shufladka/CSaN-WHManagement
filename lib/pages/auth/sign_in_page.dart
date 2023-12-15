@@ -2,14 +2,14 @@ import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class SignInWidget extends StatefulWidget {
-  const SignInWidget({Key? key}) : super(key: key);
+class SignInPage extends StatefulWidget {
+  const SignInPage({Key? key}) : super(key: key);
 
   @override
-  _SignInWidgetState createState() => _SignInWidgetState();
+  _SignInPageState createState() => _SignInPageState();
 }
 
-class _SignInWidgetState extends State<SignInWidget> {
+class _SignInPageState extends State<SignInPage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -35,7 +35,6 @@ class _SignInWidgetState extends State<SignInWidget> {
   @override
   void initState() {
     super.initState();
-
     emailController ??= TextEditingController();
     emailFocusNode ??= FocusNode();
 
