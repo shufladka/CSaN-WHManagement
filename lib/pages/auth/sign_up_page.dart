@@ -1,12 +1,8 @@
-//import 'dart:io';
-
 import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:csan/service/auth/firebase_auth_service.dart';
-
-import 'sign_up_model.dart';
 
 class SignUpWidget extends StatefulWidget {
   const SignUpWidget({Key? key}) : super(key: key);
@@ -16,10 +12,35 @@ class SignUpWidget extends StatefulWidget {
 }
 
 class _SignUpWidgetState extends State<SignUpWidget> {
-  late SignUpModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>(); // Ключ формы
+
+  final unfocusNode = FocusNode();
+
+  FocusNode? emailFocusNode;
+  TextEditingController? emailController;
+  String? Function(BuildContext, String?)? emailControllerValidator;
+
+  FocusNode? usernameFocusNode;
+  TextEditingController? usernameController;
+  String? Function(BuildContext, String?)? usernameControllerValidator;
+
+  FocusNode? passwordFocusNode;
+  TextEditingController? passwordController;
+  bool passwordVisibility = false; // Инициализируем поле passwordVisibility
+  String? Function(BuildContext, String?)? passwordControllerValidator;
+
+  FocusNode? confirmPasswordFocusNode;
+  TextEditingController? confirmPasswordController;
+  bool confirmPasswordVisibility = false; // Инициализируем поле confirmPasswordVisibility
+  String? Function(BuildContext, String?)? confirmPasswordControllerValidator;
+
+  // инициализация полей сброса ошибок при невалидном вводе
+  String? emailError;
+  String? usernameError;
+  String? passwordError;
+  String? confirmPasswordError;
 
   // значение чекбокса по умолчанию
   bool checkBoxDefaultState = false;
@@ -30,9 +51,9 @@ class _SignUpWidgetState extends State<SignUpWidget> {
 
   void _signUp() async {
 
-    String email = _model.emailController!.text;
-    //String? username = _model.usernameController?.text;
-    String password = _model.passwordController!.text;
+    String email = emailController!.text;
+    //String? username = usernameController?.text;
+    String password = passwordController!.text;
 
     User? user = await _auth.signUpEmailPassword(context, email, password);
 
@@ -42,35 +63,65 @@ class _SignUpWidgetState extends State<SignUpWidget> {
     } else {
       print('some happend :(');
     }
-
   }
 
   @override
   void initState() {
     super.initState();
-    _model = SignUpModel();
 
-    _model.emailController ??= TextEditingController();
-    _model.emailFocusNode ??= FocusNode();
+    emailController ??= TextEditingController();
+    emailFocusNode ??= FocusNode();
 
-    _model.usernameController ??= TextEditingController();
-    _model.usernameFocusNode ??= FocusNode();
+    usernameController ??= TextEditingController();
+    usernameFocusNode ??= FocusNode();
 
-    _model.passwordController ??= TextEditingController();
-    _model.passwordFocusNode ??= FocusNode();
+    passwordController ??= TextEditingController();
+    passwordFocusNode ??= FocusNode();
 
-    _model.confirmPasswordController ??= TextEditingController();
-    _model.confirmPasswordFocusNode ??= FocusNode();
+    confirmPasswordController ??= TextEditingController();
+    confirmPasswordFocusNode ??= FocusNode();
+
+    passwordVisibility = false;
+    confirmPasswordVisibility = false;
 
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
 
   @override
   void dispose() {
-    _model.dispose();
+    unfocusNode.dispose();
+
+    emailFocusNode?.dispose();
+    emailController?.dispose();
+
+    usernameFocusNode?.dispose();
+    usernameController?.dispose();
+
+    passwordFocusNode?.dispose();
+    passwordController?.dispose();
+
+    confirmPasswordFocusNode?.dispose();
+    confirmPasswordController?.dispose();
     
     super.dispose();
   }
+
+  // проверка на пустую форму
+  bool isFormEmpty() {
+    if (emailController!.text.isEmpty) {
+      if (usernameController!.text.isEmpty) {
+        if (passwordController!.text.isEmpty) {
+          if (confirmPasswordController!.text.isEmpty) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -78,8 +129,8 @@ class _SignUpWidgetState extends State<SignUpWidget> {
       title: 'sign_up',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
       child: GestureDetector(
-        onTap: () => _model.unfocusNode.canRequestFocus
-            ? FocusScope.of(context).requestFocus(_model.unfocusNode)
+        onTap: () => unfocusNode.canRequestFocus
+            ? FocusScope.of(context).requestFocus(unfocusNode)
             : FocusScope.of(context).unfocus(),
         child: Scaffold(
           key: scaffoldKey,
@@ -179,8 +230,8 @@ class _SignUpWidgetState extends State<SignUpWidget> {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
       child: TextFormField(
-        controller: _model.emailController,
-        focusNode: _model.emailFocusNode,
+        controller: emailController,
+        focusNode: emailFocusNode,
         textCapitalization: TextCapitalization.none,
         obscureText: false,
         decoration: buildInputDecoration(context, 'почтовый адрес'),
@@ -190,8 +241,6 @@ class _SignUpWidgetState extends State<SignUpWidget> {
         ),
         keyboardType: TextInputType.emailAddress,
         cursorColor: Theme.of(context).primaryColor,
-        onChanged: (value) => _model.validate(value, 'email'),
-        validator: (_) => _model.emailError, // Возвращаем ошибку из модели
       ),
     );
   }
@@ -200,8 +249,8 @@ class _SignUpWidgetState extends State<SignUpWidget> {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
       child: TextFormField(
-        controller: _model.usernameController,
-        focusNode: _model.usernameFocusNode,
+        controller: usernameController,
+        focusNode: usernameFocusNode,
         textCapitalization: TextCapitalization.none,
         obscureText: false,
         decoration: buildInputDecoration(context, 'псевдоним'),
@@ -211,9 +260,6 @@ class _SignUpWidgetState extends State<SignUpWidget> {
         ),
         keyboardType: TextInputType.name,
         cursorColor: Theme.of(context).primaryColor,
-        onChanged: (value) => _model.validate(value, 'username'),
-        validator: (_) => _model.usernameError, // Возвращаем ошибку из модели
-        // validator: (value) => _model.validate(value, 'username'),
       ),
     );
   }
@@ -222,19 +268,16 @@ class _SignUpWidgetState extends State<SignUpWidget> {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
       child: TextFormField(
-        controller: _model.passwordController,
-        focusNode: _model.passwordFocusNode,
+        controller: passwordController,
+        focusNode: passwordFocusNode,
         textCapitalization: TextCapitalization.none,
-        obscureText: !_model.passwordVisibility,
+        obscureText: !passwordVisibility,
         decoration: buildPasswordInputDecoration(context),
         style: GoogleFonts.montserrat(
           fontSize: 15,
           fontWeight: FontWeight.w600,
         ),
         cursorColor: Colors.black45,
-        onChanged: (value) => _model.validate(value, 'password'),
-        validator: (_) => _model.passwordError, // Возвращаем ошибку из модели
-        //validator: (value) => _model.validate(value, 'password'), // Обновленный валидатор
       ),
     );
   }
@@ -243,19 +286,16 @@ class _SignUpWidgetState extends State<SignUpWidget> {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
       child: TextFormField(
-        controller: _model.confirmPasswordController,
-        focusNode: _model.confirmPasswordFocusNode,
+        controller: confirmPasswordController,
+        focusNode: confirmPasswordFocusNode,
         textCapitalization: TextCapitalization.none,
-        obscureText: !_model.confirmPasswordVisibility,
+        obscureText: !confirmPasswordVisibility,
         decoration: buildConfirmPasswordInputDecoration(context),
         style: GoogleFonts.montserrat(
           fontSize: 15,
           fontWeight: FontWeight.w600,
         ),
         cursorColor: Colors.black45,
-        onChanged: (value) => _model.validate(value, 'confirmPassword'),
-        validator: (_) => _model.confirmPasswordError, // Возвращаем ошибку из модели
-        //validator: (value) => _model.validate(value, 'confirmPassword'), // валидатор, который маппится на поля ввода и подтверждения пароля
       ),
     );
   }
@@ -336,10 +376,10 @@ class _SignUpWidgetState extends State<SignUpWidget> {
         borderRadius: BorderRadius.circular(0),
       ),
       suffixIcon: InkWell(
-        onTap: () => setState(() => _model.passwordVisibility = !_model.passwordVisibility),
+        onTap: () => setState(() => passwordVisibility = !passwordVisibility),
         focusNode: FocusNode(skipTraversal: true),
         child: Icon(
-          _model.passwordVisibility
+          passwordVisibility
               ? Icons.visibility_outlined
               : Icons.visibility_off_outlined,
           color: Colors.grey,
@@ -386,10 +426,10 @@ class _SignUpWidgetState extends State<SignUpWidget> {
         borderRadius: BorderRadius.circular(0),
       ),
       suffixIcon: InkWell(
-        onTap: () => setState(() => _model.confirmPasswordVisibility = !_model.confirmPasswordVisibility),
+        onTap: () => setState(() => confirmPasswordVisibility = !confirmPasswordVisibility),
         focusNode: FocusNode(skipTraversal: true),
         child: Icon(
-          _model.confirmPasswordVisibility
+          confirmPasswordVisibility
               ? Icons.visibility_outlined
               : Icons.visibility_off_outlined,
           color: Colors.grey,
@@ -465,7 +505,7 @@ class _SignUpWidgetState extends State<SignUpWidget> {
   // Метод для валидации формы
   void validateForm(BuildContext context) {
     // Проверяем, пуста ли форма
-    if (_model.isFormEmpty()) {
+    if (isFormEmpty()) {
       // Если форма пуста, выведем ошибку (можно использовать SnackBar)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -481,7 +521,7 @@ class _SignUpWidgetState extends State<SignUpWidget> {
     }
 
     // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (_model.emailController!.text.length < 10) {
+    if (emailController!.text.length < 10) {
       // Если не совпадают, выведем ошибку (можно использовать SnackBar)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -515,7 +555,7 @@ class _SignUpWidgetState extends State<SignUpWidget> {
      */
 
     // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (_model.passwordController!.text.length < 6) {
+    if (passwordController!.text.length < 6) {
       // Если не совпадают, выведем ошибку (можно использовать SnackBar)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -531,7 +571,7 @@ class _SignUpWidgetState extends State<SignUpWidget> {
     }
 
     // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (_model.confirmPasswordController!.text.length < 6) {
+    if (confirmPasswordController!.text.length < 6) {
       // Если не совпадают, выведем ошибку (можно использовать SnackBar)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -547,7 +587,7 @@ class _SignUpWidgetState extends State<SignUpWidget> {
     }
 
     // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (_model.passwordController?.text != _model.confirmPasswordController?.text) {
+    if (passwordController?.text != confirmPasswordController?.text) {
       // Если не совпадают, выведем ошибку (можно использовать SnackBar)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

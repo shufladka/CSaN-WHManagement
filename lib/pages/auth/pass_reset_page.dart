@@ -2,8 +2,6 @@ import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'pass_reset_model.dart';
-
 class PassResetWidget extends StatefulWidget {
   const PassResetWidget({Key? key}) : super(key: key);
 
@@ -12,27 +10,40 @@ class PassResetWidget extends StatefulWidget {
 }
 
 class _PassResetWidgetState extends State<PassResetWidget> {
-  late PassResetModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  final unfocusNode = FocusNode();
+  FocusNode? emailFocusNode;
+  TextEditingController? emailController;
+  String? Function(BuildContext, String?)? emailControllerValidator;
 
   @override
   void initState() {
     super.initState();
-    _model = PassResetModel();
 
-    _model.emailController ??= TextEditingController();
-    _model.emailFocusNode ??= FocusNode();
+    emailController ??= TextEditingController();
+    emailFocusNode ??= FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
 
   @override
   void dispose() {
-    _model.dispose();
-
     super.dispose();
+    unfocusNode.dispose();
+
+    emailFocusNode?.dispose();
+    emailController?.dispose();
+  }
+
+  // проверка на пустую форму
+  bool isFormEmpty() {
+    if (emailController!.text.isEmpty) {
+      return true;
+    }
+
+    return false;
   }
 
   @override
@@ -41,8 +52,8 @@ class _PassResetWidgetState extends State<PassResetWidget> {
       title: 'pass_reset',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
       child: GestureDetector(
-        onTap: () => _model.unfocusNode.canRequestFocus
-            ? FocusScope.of(context).requestFocus(_model.unfocusNode)
+        onTap: () => unfocusNode.canRequestFocus
+            ? FocusScope.of(context).requestFocus(unfocusNode)
             : FocusScope.of(context).unfocus(),
         child: Scaffold(
           key: scaffoldKey,
@@ -132,8 +143,8 @@ class _PassResetWidgetState extends State<PassResetWidget> {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
       child: TextFormField(
-        controller: _model.emailController,
-        focusNode: _model.emailFocusNode,
+        controller: emailController,
+        focusNode: emailFocusNode,
         textCapitalization: TextCapitalization.none,
         obscureText: false,
         decoration: buildInputDecoration(context, 'почтовый адрес, на который был зарегистрирован аккаунт'),
@@ -143,7 +154,6 @@ class _PassResetWidgetState extends State<PassResetWidget> {
         ),
         keyboardType: TextInputType.emailAddress,
         cursorColor: Theme.of(context).primaryColor,
-        validator: (value) => _model.validate(value, 'email'),
       ),
     );
   }
@@ -200,7 +210,7 @@ class _PassResetWidgetState extends State<PassResetWidget> {
   // Метод для валидации формы
   void validateForm(BuildContext context) {
     // Проверяем, пуста ли форма
-    if (_model.isFormEmpty()) {
+    if (isFormEmpty()) {
       // Если форма пуста, выведем ошибку (можно использовать SnackBar)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -216,7 +226,7 @@ class _PassResetWidgetState extends State<PassResetWidget> {
     }
 
     // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (_model.emailController!.text.length < 10) {
+    if (emailController!.text.length < 10) {
       // Если не совпадают, выведем ошибку (можно использовать SnackBar)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
