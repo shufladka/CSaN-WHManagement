@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'lobbyModel.dart';
+import 'lobby_model.dart';
 
 class LobbyWidget extends StatefulWidget {
   const LobbyWidget({Key? key}) : super(key: key);

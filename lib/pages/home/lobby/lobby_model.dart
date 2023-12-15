@@ -22,6 +22,7 @@ class LobbyModel extends ChangeNotifier {
     t2Visibility = false;
   }
 
+  @override
   void dispose() {
     super.dispose();
     unfocusNode.dispose();

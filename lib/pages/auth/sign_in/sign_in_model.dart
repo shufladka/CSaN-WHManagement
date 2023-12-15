@@ -1,44 +1,44 @@
-// signUpModel.dart
+// sign_up_model.dart
 
 import 'package:flutter/material.dart';
 
 class SignInModel extends ChangeNotifier {
   final unfocusNode = FocusNode();
 
-  FocusNode? t1FocusNode;
-  TextEditingController? t1Controller;
-  String? Function(BuildContext, String?)? t1ControllerValidator;
+  FocusNode? emailFocusNode;
+  TextEditingController? emailController;
+  String? Function(BuildContext, String?)? emailControllerValidator;
 
-  FocusNode? t2FocusNode;
-  TextEditingController? t2Controller;
-  bool t2Visibility = false; // Инициализируем поле t2Visibility
-  String? Function(BuildContext, String?)? t2ControllerValidator;
+  FocusNode? passwordFocusNode;
+  TextEditingController? passwordController;
+  bool passwordVisibility = false; // Инициализируем поле passwordVisibility
+  String? Function(BuildContext, String?)? passwordControllerValidator;
 
   // инициализация полей сброса ошибок при невалидном вводе
-  String? t1Error;
-  String? t2Error;
+  String? emailError;
+  String? passwordError;
 
   bool? checkboxValue;
 
   void initState(BuildContext context) {
-    t2Visibility = false;
+    passwordVisibility = false;
   }
 
   void dispose() {
     super.dispose();
     unfocusNode.dispose();
 
-    t1FocusNode?.dispose();
-    t1Controller?.dispose();
+    emailFocusNode?.dispose();
+    emailController?.dispose();
 
-    t2FocusNode?.dispose();
-    t2Controller?.dispose();
+    passwordFocusNode?.dispose();
+    passwordController?.dispose();
   }
 
   // проверка на пустую форму
   bool isFormEmpty() {
-    if (t1Controller!.text.isEmpty) {
-      if (t2Controller!.text.isEmpty) {
+    if (emailController!.text.isEmpty) {
+      if (passwordController!.text.isEmpty) {
         return true;
       }
     }
@@ -49,20 +49,20 @@ class SignInModel extends ChangeNotifier {
   // метод для валидации значений
   String? validate(String? value, String fieldName) {
     switch (fieldName) {
-      case 't1':
+      case 'email':
       // Пример: валидация по длине текста
         if (value!.length < 10) {
-          t1Error = 'Почтовый адрес должен содержать не менее 10 символов';
+          emailError = 'Почтовый адрес должен содержать не менее 10 символов';
         } else {
-          t1Error = null;
+          emailError = null;
         }
         break;
-      case 't2':
+      case 'password':
       // Валидация пароля, например, на длину
         if (value!.length < 6) {
-          t2Error = 'Пароль должен содержать не менее 6 символов';
+          passwordError = 'Пароль должен содержать не менее 6 символов';
         } else {
-          t2Error = null;
+          passwordError = null;
         }
         break;
     }
@@ -72,10 +72,10 @@ class SignInModel extends ChangeNotifier {
 
     // Возвращаем ошибку, если она есть
     switch (fieldName) {
-      case 't1':
-        return t1Error;
-      case 't2':
-        return t2Error;
+      case 'email':
+        return emailError;
+      case 'password':
+        return passwordError;
       default:
         return null;
     }

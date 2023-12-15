@@ -1,4 +1,4 @@
-// signUpModel.dart
+// sign_up_model.dart
 
 import 'package:flutter/material.dart';
 

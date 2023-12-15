@@ -1,13 +1,12 @@
-// signUpWidget.dart
+//import 'dart:io';
 
-import 'dart:io';
-
+import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:csan/service/auth/firebase_auth.dart';
+import 'package:csan/service/auth/firebase_auth_service.dart';
 
-import 'signUpModel.dart';
+import 'sign_up_model.dart';
 
 class SignUpWidget extends StatefulWidget {
   const SignUpWidget({Key? key}) : super(key: key);
@@ -24,6 +23,8 @@ class _SignUpWidgetState extends State<SignUpWidget> {
 
   // значение чекбокса по умолчанию
   bool checkBoxDefaultState = false;
+
+  bool isButtonPressed = false;
 
   final FirebaseAuthService _auth = FirebaseAuthService();
 
@@ -303,6 +304,8 @@ class _SignUpWidgetState extends State<SignUpWidget> {
       hintText: 'пароль',
       hintStyle: GoogleFonts.montserrat(
         color: const Color(0x6222282F),
+        fontWeight: FontWeight.w600,
+        fontSize: 15,
       ),
       enabledBorder: OutlineInputBorder(
         borderSide: const BorderSide(
@@ -351,6 +354,8 @@ class _SignUpWidgetState extends State<SignUpWidget> {
       hintText: 'подтвердите пароль',
       hintStyle: GoogleFonts.montserrat(
         color: const Color(0x6222282F),
+        fontWeight: FontWeight.w600,
+        fontSize: 15,
       ),
       enabledBorder: OutlineInputBorder(
         borderSide: const BorderSide(
@@ -394,10 +399,27 @@ class _SignUpWidgetState extends State<SignUpWidget> {
     );
   }
 
-  GestureDetector buildCreateAccountButton(BuildContext context) {
+  /*
+  // кнопка для добавления пользовательских данных в базу
+  Widget buildCreateAccountButton(BuildContext context) {
     return GestureDetector(
+      onTapDown: (_) {
+        setState(() {
+          isButtonPressed = true;
+        });
+      },
+      onTapUp: (_) {
+        setState(() {
+          isButtonPressed = false;
+        });
+      },
+      onTapCancel: () {
+        setState(() {
+          isButtonPressed = false;
+        });
+      },
       onTap: () {
-        // проверка формы на валидность и переход к другой странице
+        // Действия при нажатии на кнопку
         validateForm(context);
       },
       child: Padding(
@@ -406,18 +428,18 @@ class _SignUpWidgetState extends State<SignUpWidget> {
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              // вызываем метод для валидации формы и выполнения других действий
+              // Действия при нажатии на кнопку
               validateForm(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black87,
+              backgroundColor: isButtonPressed ? Colors.grey : Colors.black87,
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.zero,
               ),
             ),
-            child: Text(
+            child: const Text(
               'СОЗДАТЬ АККАУНТ',
-              style: GoogleFonts.montserrat(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -426,6 +448,17 @@ class _SignUpWidgetState extends State<SignUpWidget> {
           ),
         ),
       ),
+    );
+  }
+  */
+
+  Widget buildCreateAccountButton(BuildContext context) {
+    return BuildButtonWidget(
+      buttonText: 'СОЗДАТЬ АККАУНТ',
+      onPressed: () {
+        // Вызываем метод для валидации формы регистрации
+        validateForm(context);
+      },
     );
   }
 

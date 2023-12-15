@@ -1,9 +1,10 @@
-// signUpWidget.dart
+// sign_up_widget.dart
 
+import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'signInModel.dart';
+import 'sign_in_model.dart';
 
 class SignInWidget extends StatefulWidget {
   const SignInWidget({Key? key}) : super(key: key);
@@ -11,7 +12,6 @@ class SignInWidget extends StatefulWidget {
   @override
   _SignInWidgetState createState() => _SignInWidgetState();
 }
-
 
 class _SignInWidgetState extends State<SignInWidget> {
 
@@ -22,20 +22,16 @@ class _SignInWidgetState extends State<SignInWidget> {
   // значение чекбокса по умолчанию
   bool checkBoxDefaultState = false;
 
-  // TextEditingController _emailController = TextEditingController();
-  // TextEditingController _usernameController = TextEditingController();
-  // TextEditingController _passwordController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
     _model = SignInModel();
 
-    _model.t1Controller ??= TextEditingController();
-    _model.t1FocusNode ??= FocusNode();
+    _model.emailController ??= TextEditingController();
+    _model.emailFocusNode ??= FocusNode();
 
-    _model.t2Controller ??= TextEditingController();
-    _model.t2FocusNode ??= FocusNode();
+    _model.passwordController ??= TextEditingController();
+    _model.passwordFocusNode ??= FocusNode();
 
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
@@ -151,8 +147,8 @@ class _SignInWidgetState extends State<SignInWidget> {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
       child: TextFormField(
-        controller: _model.t1Controller,
-        focusNode: _model.t1FocusNode,
+        controller: _model.emailController,
+        focusNode: _model.emailFocusNode,
         textCapitalization: TextCapitalization.none,
         obscureText: false,
         decoration: buildInputDecoration(context, 'почтовый адрес или псевдоним'),
@@ -162,7 +158,7 @@ class _SignInWidgetState extends State<SignInWidget> {
         ),
         keyboardType: TextInputType.emailAddress,
         cursorColor: Theme.of(context).primaryColor,
-        validator: (value) => _model.validate(value, 't1'),
+        validator: (value) => _model.validate(value, 'email'),
       ),
     );
   }
@@ -171,17 +167,17 @@ class _SignInWidgetState extends State<SignInWidget> {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
       child: TextFormField(
-        controller: _model.t2Controller,
-        focusNode: _model.t2FocusNode,
+        controller: _model.passwordController,
+        focusNode: _model.passwordFocusNode,
         textCapitalization: TextCapitalization.none,
-        obscureText: !_model.t2Visibility,
+        obscureText: !_model.passwordVisibility,
         decoration: buildPasswordInputDecoration(context),
         style: GoogleFonts.montserrat(
           fontSize: 15,
           fontWeight: FontWeight.w600,
         ),
         cursorColor: Colors.black45,
-        validator: (value) => _model.validate(value, 't1'),
+        validator: (value) => _model.validate(value, 'email'),
       ),
     );
   }
@@ -230,6 +226,8 @@ class _SignInWidgetState extends State<SignInWidget> {
       hintText: 'пароль',
       hintStyle: GoogleFonts.montserrat(
         color: const Color(0x6222282F),
+        fontWeight: FontWeight.w600,
+        fontSize: 15,
       ),
       enabledBorder: OutlineInputBorder(
         borderSide: const BorderSide(
@@ -260,10 +258,10 @@ class _SignInWidgetState extends State<SignInWidget> {
         borderRadius: BorderRadius.circular(0),
       ),
       suffixIcon: InkWell(
-        onTap: () => setState(() => _model.t2Visibility = !_model.t2Visibility),
+        onTap: () => setState(() => _model.passwordVisibility = !_model.passwordVisibility),
         focusNode: FocusNode(skipTraversal: true),
         child: Icon(
-          _model.t2Visibility
+          _model.passwordVisibility
               ? Icons.visibility_outlined
               : Icons.visibility_off_outlined,
           color: Colors.grey,
@@ -313,31 +311,12 @@ class _SignInWidgetState extends State<SignInWidget> {
   }
 
   Widget buildSignInButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 20, bottom: 20),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () {
-            // Вызываем метод для валидации формы
-            validateForm(context);
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.black87, // Заменил на классический цвет
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero, // Убираем закругления
-            ),
-          ),
-          child: Text(
-            'ВОЙТИ',
-            style: GoogleFonts.montserrat(
-              color: Colors.white, // Заменил на классический цвет
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
+    return BuildButtonWidget(
+      buttonText: 'ВОЙТИ',
+      onPressed: () {
+        // Вызываем метод для валидации формы регистрации
+        validateForm(context);
+      },
     );
   }
 
@@ -360,7 +339,7 @@ class _SignInWidgetState extends State<SignInWidget> {
     }
 
     // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (_model.t1Controller!.text.length < 10) {
+    if (_model.emailController!.text.length < 10) {
       // Если не совпадают, выведем ошибку (можно использовать SnackBar)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -376,7 +355,7 @@ class _SignInWidgetState extends State<SignInWidget> {
     }
 
     // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (_model.t2Controller!.text.length < 6) {
+    if (_model.passwordController!.text.length < 6) {
       // Если не совпадают, выведем ошибку (можно использовать SnackBar)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -452,8 +431,8 @@ class _SignInWidgetState extends State<SignInWidget> {
           padding: EdgeInsets.only(top: 20, bottom: 16),
           child: InkWell(
             onTap: () {
-              //Navigator.of(context).pushNamed('sign_reset');
-              Navigator.of(context).pushNamed('lobby');
+              Navigator.of(context).pushNamed('pass_reset');
+              // Navigator.of(context).pushNamed('lobby');
             },
             child: Container(
               color: Colors.white, // Белый фон

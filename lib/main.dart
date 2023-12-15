@@ -2,9 +2,10 @@ import 'package:firebase_core/firebase_core.dart';
 // import 'package:flutter/foundation.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
-import 'pages/auth/sign_in/signInWidget.dart';
-import 'pages/auth/sign_up/signUpWidget.dart';
-import 'pages/home/lobby/lobbyWidget.dart';
+import 'pages/auth/sign_in/sign_in_widget.dart';
+import 'pages/auth/sign_up/sign_up_widget.dart';
+import 'pages/home/lobby/lobby_widget.dart';
+import 'pages/auth/password_reset/pass_reset_widget.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,9 +39,10 @@ class MyApp extends StatelessWidget {
       initialRoute: '/', // Задайте вашу начальную страницу, если нужно
       routes: {
         '/': (context) => const SignInWidget(), // маршруты
-        'sign_in': (context) => const SignInWidget(), // маршруты
-        'sign_up': (context) => const SignUpWidget(), // маршруты
-        'lobby':  (context) => const LobbyWidget(), // маршруты
+        'sign_in': (context) => const SignInWidget(), // вход в приложение
+        'sign_up': (context) => const SignUpWidget(), // регистрация
+        'pass_reset': (context) => const PassResetWidget(), // сброс пароля
+        'lobby':  (context) => const LobbyWidget(), // лобби приложения
       },
     );
   }
