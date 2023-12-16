@@ -1,42 +1,109 @@
+import 'package:csan/service/auth/firebase_auth_service.dart';
+import 'package:csan/service/auth/form_validator.dart';
+import 'package:csan/widgets/input_decoration_widget.dart';
+import 'package:csan/widgets/submit_button_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'lobby_model.dart';
-
-class LobbyWidget extends StatefulWidget {
-  const LobbyWidget({Key? key}) : super(key: key);
+class SignInPage extends StatefulWidget {
+  const SignInPage({Key? key}) : super(key: key);
 
   @override
-  _LobbyWidgetState createState() => _LobbyWidgetState();
+  _SignInPageState createState() => _SignInPageState();
 }
 
-class _LobbyWidgetState extends State<LobbyWidget> {
-  late LobbyModel _model;
+class _SignInPageState extends State<SignInPage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  final unfocusNode = FocusNode();
+
+  FocusNode? emailFocusNode;
+  TextEditingController? emailController;
+
+  FocusNode? passwordFocusNode;
+  TextEditingController? passwordController;
+  bool passwordVisibility = false; // Инициализируем поле passwordVisibility
+
+  // инициализация полей сброса ошибок при невалидном вводе
+  String? emailError;
+  String? passwordError;
+
+  // определяем текущее значение чекбокса
+  bool? checkboxValue;
 
   // значение чекбокса по умолчанию
   bool checkBoxDefaultState = false;
 
+  // сервис аутентификации пользователя
+  final FirebaseAuthService _auth = FirebaseAuthService();
+
+  // обработка перехода через вызов сервиса аутентификации
+  void _signIn() async {
+
+    String email = emailController!.text;
+    String password = passwordController!.text;
+
+    User? user = await _auth.signInEmailPassword(context, email, password);
+
+    if (user != null) {
+      print('user is successfully created.');
+      _saveData(); // Добавлен вызов _saveData
+      Navigator.pushReplacementNamed(context, "lobby");
+    } else {
+      print('some happend :(');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _model = LobbyModel();
+    emailController ??= TextEditingController();
+    emailFocusNode ??= FocusNode();
 
-    _model.t1Controller ??= TextEditingController();
-    _model.t1FocusNode ??= FocusNode();
+    passwordController ??= TextEditingController();
+    passwordFocusNode ??= FocusNode();
 
-    _model.t2Controller ??= TextEditingController();
-    _model.t2FocusNode ??= FocusNode();
+    passwordVisibility = false;
 
+    // загрузка сохраненных данных при запуске страницы
+    _loadSavedData();
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
 
   @override
   void dispose() {
-    _model.dispose();
+    unfocusNode.dispose();
+
+    emailFocusNode?.dispose();
+    emailController?.dispose();
+
+    passwordFocusNode?.dispose();
+    passwordController?.dispose();
 
     super.dispose();
+  }
+
+  Future<void> _loadSavedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      checkboxValue = prefs.getBool('rememberMe') ?? checkBoxDefaultState;
+      if (checkboxValue!) {
+        emailController!.text = prefs.getString('savedEmail') ?? '';
+        passwordController!.text = prefs.getString('savedPassword') ?? '';
+      }
+    });
+  }
+
+  Future<void> _saveData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('rememberMe', checkboxValue!);
+    if (checkboxValue!) {
+      prefs.setString('savedEmail', emailController!.text);
+      prefs.setString('savedPassword', passwordController!.text);
+    }
   }
 
   @override
@@ -45,8 +112,8 @@ class _LobbyWidgetState extends State<LobbyWidget> {
       title: 'sign_in',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
       child: GestureDetector(
-        onTap: () => _model.unfocusNode.canRequestFocus
-            ? FocusScope.of(context).requestFocus(_model.unfocusNode)
+        onTap: () => unfocusNode.canRequestFocus
+            ? FocusScope.of(context).requestFocus(unfocusNode)
             : FocusScope.of(context).unfocus(),
         child: Scaffold(
           key: scaffoldKey,
@@ -67,11 +134,11 @@ class _LobbyWidgetState extends State<LobbyWidget> {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height * 1,
-      constraints: BoxConstraints(
+      constraints: const BoxConstraints(
         minWidth: 300,
         maxWidth: 600,
       ),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white, // Заменил на классический цвет
       ),
       child: buildFormFields(context),
@@ -85,18 +152,13 @@ class _LobbyWidgetState extends State<LobbyWidget> {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
         buildTitle(context),
-
-        buildTestButton(context),
-        /*
         buildEmailField(context),
         buildPasswordField(context),
         buildRememberMeCheckbox(context),
         buildSignInButton(context),
         buildRegistrationLink(context),
         buildForgotPasswordButton(context),
-        */
       ],
     );
   }
@@ -132,7 +194,7 @@ class _LobbyWidgetState extends State<LobbyWidget> {
       child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 40),
         child: Text(
-          'ГЛАВНОЕ МЕНЮ',
+          'ВХОД В АККАУНТ',
           textAlign: TextAlign.center,
           style: GoogleFonts.montserrat(
             fontSize: 20,
@@ -144,60 +206,22 @@ class _LobbyWidgetState extends State<LobbyWidget> {
     );
   }
 
-
-
-
-  Widget buildTestButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 20, bottom: 20),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () {
-            // Вызываем метод для валидации формы
-            //validateForm(context);
-            print('pressed');
-            Navigator.of(context).pushNamed('sign_in');
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.redAccent, // Заменил на классический цвет
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero, // Убираем закругления
-            ),
-          ),
-          child: Text(
-            'ВЫЙТИ',
-            style: GoogleFonts.montserrat(
-              color: Colors.white, // Заменил на классический цвет
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-
-
-
-
   Widget buildEmailField(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
       child: TextFormField(
-        controller: _model.t1Controller,
-        focusNode: _model.t1FocusNode,
+        controller: emailController,
+        focusNode: emailFocusNode,
         textCapitalization: TextCapitalization.none,
         obscureText: false,
-        decoration: buildInputDecoration(context, 'почтовый адрес или псевдоним'),
+        //decoration: buildInputDecoration(context, 'почтовый адрес или псевдоним'),
+        decoration: InputDecorationBuilder.buildInputDecoration(context, 'почтовый адрес'),
         style: GoogleFonts.montserrat(
           fontSize: 15,
           fontWeight: FontWeight.w600,
         ),
         keyboardType: TextInputType.emailAddress,
         cursorColor: Theme.of(context).primaryColor,
-        validator: (value) => _model.validate(value, 't1'),
       ),
     );
   }
@@ -206,24 +230,23 @@ class _LobbyWidgetState extends State<LobbyWidget> {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
       child: TextFormField(
-        controller: _model.t2Controller,
-        focusNode: _model.t2FocusNode,
+        controller: passwordController,
+        focusNode: passwordFocusNode,
         textCapitalization: TextCapitalization.none,
-        obscureText: !_model.t2Visibility,
+        obscureText: !passwordVisibility,
         decoration: buildPasswordInputDecoration(context),
         style: GoogleFonts.montserrat(
           fontSize: 15,
           fontWeight: FontWeight.w600,
         ),
         cursorColor: Colors.black45,
-        validator: (value) => _model.validate(value, 't1'),
       ),
     );
   }
 
-  InputDecoration buildInputDecoration(BuildContext context, String hintText) {
+  InputDecoration buildPasswordInputDecoration(BuildContext context) {
     return InputDecoration(
-      hintText: hintText,
+      hintText: 'пароль',
       hintStyle: GoogleFonts.montserrat(
         color: const Color(0x6222282F),
         fontWeight: FontWeight.w600,
@@ -257,48 +280,11 @@ class _LobbyWidgetState extends State<LobbyWidget> {
         ),
         borderRadius: BorderRadius.circular(0),
       ),
-    );
-  }
-
-  InputDecoration buildPasswordInputDecoration(BuildContext context) {
-    return InputDecoration(
-      hintText: 'пароль',
-      hintStyle: GoogleFonts.montserrat(
-        color: const Color(0x6222282F),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderSide: const BorderSide(
-          color: Color(0xB1F1F4F8),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(0),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(
-          color: Color(0xB1F1F4F8),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(0),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(
-          color: Color(0xB1F1F4F8),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(0),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(
-          color: Color(0xB1F1F4F8),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(0),
-      ),
       suffixIcon: InkWell(
-        onTap: () => setState(() => _model.t2Visibility = !_model.t2Visibility),
+        onTap: () => setState(() => passwordVisibility = !passwordVisibility),
         focusNode: FocusNode(skipTraversal: true),
         child: Icon(
-          _model.t2Visibility
+          passwordVisibility
               ? Icons.visibility_outlined
               : Icons.visibility_off_outlined,
           color: Colors.grey,
@@ -326,9 +312,10 @@ class _LobbyWidgetState extends State<LobbyWidget> {
           child: Checkbox(
 
             // значение чекбокса по умолчанию - не нажата
-            value: _model.checkboxValue ??= checkBoxDefaultState,
+            value: checkboxValue ??= checkBoxDefaultState,
             onChanged: (newValue) async {
-              setState(() => _model.checkboxValue = newValue!);
+              setState(() => checkboxValue = newValue!);
+              _saveData(); // сохранение данных при изменении чекбокса
             },
             activeColor: Colors.black,
             checkColor: Colors.white,
@@ -348,86 +335,25 @@ class _LobbyWidgetState extends State<LobbyWidget> {
   }
 
   Widget buildSignInButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 20, bottom: 20),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: () {
-            // Вызываем метод для валидации формы
-            validateForm(context);
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.black87, // Заменил на классический цвет
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero, // Убираем закругления
-            ),
-          ),
-          child: Text(
-            'ВОЙТИ',
-            style: GoogleFonts.montserrat(
-              color: Colors.white, // Заменил на классический цвет
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
+
+    // экземпляр класса валидации формы регистрации нового пользователя
+    CustomFormValidator formValidator = CustomFormValidator(
+      emailController: emailController,
+      passwordController: passwordController,
+      confirmPasswordController: null,
+      needPassword: false,
+      needConfirmPassword: false,
     );
-  }
 
-  // Метод для валидации формы
-  void validateForm(BuildContext context) {
-    // Проверяем, пуста ли форма
-    if (_model.isFormEmpty()) {
-      // Если форма пуста, выведем ошибку (можно использовать SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Заполните все поля формы.',
-            textAlign: TextAlign.center, // Выравнивание по центру
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Прекращаем выполнение метода
-      return;
-    }
-
-    // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (_model.t1Controller!.text.length < 10) {
-      // Если не совпадают, выведем ошибку (можно использовать SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Длина почтового адреса должна составлять не менее 10 символов.',
-            textAlign: TextAlign.center, // Выравнивание по центру
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Прекращаем выполнение метода
-      return;
-    }
-
-    // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (_model.t2Controller!.text.length < 6) {
-      // Если не совпадают, выведем ошибку (можно использовать SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Длина пароля должна составлять не менее 6 символов.',
-            textAlign: TextAlign.center, // Выравнивание по центру
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Прекращаем выполнение метода
-      return;
-    }
-
-    // дописать код для обработки создания аккаунта
-    print('Button pressed ...');
+    return BuildButtonWidget(
+      buttonText: 'ВОЙТИ',
+      onPressed: () {
+        // если форма валидна, переходим к странице входа в аккаунт
+        if (formValidator.validateForm(context)) {
+          _signIn();
+        }
+      },
+    );
   }
 
   Widget buildRegistrationLink(BuildContext context) {
@@ -484,10 +410,11 @@ class _LobbyWidgetState extends State<LobbyWidget> {
       width: double.infinity,
       child: Center(
         child: Padding(
-          padding: EdgeInsets.only(top: 20, bottom: 16),
+          padding: const EdgeInsets.only(top: 20, bottom: 16),
           child: InkWell(
             onTap: () {
-              Navigator.of(context).pushNamed('sign_reset');
+              Navigator.of(context).pushNamed('pass_reset');
+              // Navigator.of(context).pushNamed('lobby');
             },
             child: Container(
               color: Colors.white, // Белый фон
