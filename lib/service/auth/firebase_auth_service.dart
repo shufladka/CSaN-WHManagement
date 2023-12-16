@@ -6,6 +6,7 @@ class FirebaseAuthService {
 
   FirebaseAuth _auth = FirebaseAuth.instance;
 
+  // сохранение нового пользователя в базу пользователей
   Future<User?> signUpEmailPassword(BuildContext context, String email, String password) async {
 
     try {
@@ -17,7 +18,7 @@ class FirebaseAuthService {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Аккаунт успешно создан!',
+            'АККАУНТ УСПЕШНО СОЗДАН!',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white,
@@ -41,11 +42,11 @@ class FirebaseAuthService {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'аккаунт с таким почтовым адресом уже существует.',
+            'АККАУНТ С ТАКИМ ПОЧТОВЫМ АДРЕСОМ УЖЕ СУЩЕСТВУЕТ',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 12,
               fontWeight: FontWeight.w500,
               fontFamily: 'Montserrat', // Укажите название вашего шрифта
             ),
@@ -53,20 +54,95 @@ class FirebaseAuthService {
           backgroundColor: Colors.red,
         ),
       );
-
-
-      return null;
     }
+
+    return null;
   }
 
-  Future<User?> signInEmailPassword(String email, String password) async {
+  // вход в приложение
+  Future<User?> signInEmailPassword(BuildContext context, String email, String password) async {
 
     try {
+
+      // попытка входа в аккаунт
       UserCredential credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
       return credential.user;
     }
     catch (exc) {
-      print('sign_in error');
+
+      // обработка ошибок входа в аккаунт
+      print('sign_in error: $exc');
+
+      // вывод сообщения о неудачной попытке создания нового аккаунта
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'АККАУНТ С ТАКИМ ПОЧТОВЫМ АДРЕСОМ НЕ СУЩЕСТВУЕТ',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              fontFamily: 'Montserrat', // Укажите название вашего шрифта
+            ),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+
+    return null;
+  }
+
+  // восстановление пароля
+  Future<User?> resetPassword(BuildContext context, String email) async {
+
+    try {
+
+      // для защиты от подбора аккаунта проверку на существование пользователя не делаем
+      await _auth.sendPasswordResetEmail(email: email);
+
+      // вывод сообщения об успешном создании нового аккаунта
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'ПРОВЕРЬТЕ ВАШУ ПОЧТУ',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              fontFamily: 'Montserrat', // Укажите название вашего шрифта
+            ),
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      User? user = _auth.currentUser;
+      return user;
+
+    } on FirebaseAuthException catch (exc) {
+
+      // обработка ошибок создания аккаунта
+      print('pass_reset error: $exc');
+
+      // вывод сообщения о неудачной попытке создания нового аккаунта
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'ПРОИЗОШЛА НЕИЗВЕСТНАЯ ОШИБКА',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Montserrat', // Укажите название вашего шрифта
+              ),
+            ),
+            backgroundColor: Colors.red,
+          ),
+      );
     }
 
     return null;

@@ -1,6 +1,11 @@
+import 'package:csan/service/auth/firebase_auth_service.dart';
+import 'package:csan/service/auth/form_validator.dart';
+import 'package:csan/widgets/input_decoration_widget.dart';
 import 'package:csan/widgets/submit_button_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({Key? key}) : super(key: key);
@@ -17,20 +22,40 @@ class _SignInPageState extends State<SignInPage> {
 
   FocusNode? emailFocusNode;
   TextEditingController? emailController;
-  String? Function(BuildContext, String?)? emailControllerValidator;
 
   FocusNode? passwordFocusNode;
   TextEditingController? passwordController;
   bool passwordVisibility = false; // Инициализируем поле passwordVisibility
-  String? Function(BuildContext, String?)? passwordControllerValidator;
 
   // инициализация полей сброса ошибок при невалидном вводе
   String? emailError;
   String? passwordError;
 
+  // определяем текущее значение чекбокса
+  bool? checkboxValue;
+
   // значение чекбокса по умолчанию
   bool checkBoxDefaultState = false;
-  bool? checkboxValue;
+
+  // сервис аутентификации пользователя
+  final FirebaseAuthService _auth = FirebaseAuthService();
+
+  // обработка перехода через вызов сервиса аутентификации
+  void _signIn() async {
+
+    String email = emailController!.text;
+    String password = passwordController!.text;
+
+    User? user = await _auth.signInEmailPassword(context, email, password);
+
+    if (user != null) {
+      print('user is successfully created.');
+      _saveData(); // Добавлен вызов _saveData
+      Navigator.pushReplacementNamed(context, "lobby");
+    } else {
+      print('some happend :(');
+    }
+  }
 
   @override
   void initState() {
@@ -43,6 +68,8 @@ class _SignInPageState extends State<SignInPage> {
 
     passwordVisibility = false;
 
+    // загрузка сохраненных данных при запуске страницы
+    _loadSavedData();
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
 
@@ -59,15 +86,24 @@ class _SignInPageState extends State<SignInPage> {
     super.dispose();
   }
 
-  // проверка на пустую форму
-  bool isFormEmpty() {
-    if (emailController!.text.isEmpty) {
-      if (passwordController!.text.isEmpty) {
-        return true;
+  Future<void> _loadSavedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      checkboxValue = prefs.getBool('rememberMe') ?? checkBoxDefaultState;
+      if (checkboxValue!) {
+        emailController!.text = prefs.getString('savedEmail') ?? '';
+        passwordController!.text = prefs.getString('savedPassword') ?? '';
       }
-    }
+    });
+  }
 
-    return false;
+  Future<void> _saveData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('rememberMe', checkboxValue!);
+    if (checkboxValue!) {
+      prefs.setString('savedEmail', emailController!.text);
+      prefs.setString('savedPassword', passwordController!.text);
+    }
   }
 
   @override
@@ -178,7 +214,8 @@ class _SignInPageState extends State<SignInPage> {
         focusNode: emailFocusNode,
         textCapitalization: TextCapitalization.none,
         obscureText: false,
-        decoration: buildInputDecoration(context, 'почтовый адрес или псевдоним'),
+        //decoration: buildInputDecoration(context, 'почтовый адрес или псевдоним'),
+        decoration: InputDecorationBuilder.buildInputDecoration(context, 'почтовый адрес'),
         style: GoogleFonts.montserrat(
           fontSize: 15,
           fontWeight: FontWeight.w600,
@@ -203,45 +240,6 @@ class _SignInPageState extends State<SignInPage> {
           fontWeight: FontWeight.w600,
         ),
         cursorColor: Colors.black45,
-      ),
-    );
-  }
-
-  InputDecoration buildInputDecoration(BuildContext context, String hintText) {
-    return InputDecoration(
-      hintText: hintText,
-      hintStyle: GoogleFonts.montserrat(
-        color: const Color(0x6222282F),
-        fontWeight: FontWeight.w600,
-        fontSize: 15,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderSide: const BorderSide(
-          color: Color(0xB1F1F4F8),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(0),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(
-          color: Color(0xB1F1F4F8),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(0),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(
-          color: Color(0xB1F1F4F8),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(0),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(
-          color: Color(0xB1F1F4F8),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(0),
       ),
     );
   }
@@ -317,6 +315,7 @@ class _SignInPageState extends State<SignInPage> {
             value: checkboxValue ??= checkBoxDefaultState,
             onChanged: (newValue) async {
               setState(() => checkboxValue = newValue!);
+              _saveData(); // сохранение данных при изменении чекбокса
             },
             activeColor: Colors.black,
             checkColor: Colors.white,
@@ -336,67 +335,25 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   Widget buildSignInButton(BuildContext context) {
+
+    // экземпляр класса валидации формы регистрации нового пользователя
+    CustomFormValidator formValidator = CustomFormValidator(
+      emailController: emailController,
+      passwordController: passwordController,
+      confirmPasswordController: null,
+      needPassword: false,
+      needConfirmPassword: false,
+    );
+
     return BuildButtonWidget(
       buttonText: 'ВОЙТИ',
       onPressed: () {
-        // Вызываем метод для валидации формы регистрации
-        validateForm(context);
+        // если форма валидна, переходим к странице входа в аккаунт
+        if (formValidator.validateForm(context)) {
+          _signIn();
+        }
       },
     );
-  }
-
-  // Метод для валидации формы
-  void validateForm(BuildContext context) {
-    // Проверяем, пуста ли форма
-    if (isFormEmpty()) {
-      // Если форма пуста, выведем ошибку (можно использовать SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Заполните все поля формы.',
-            textAlign: TextAlign.center, // Выравнивание по центру
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Прекращаем выполнение метода
-      return;
-    }
-
-    // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (emailController!.text.length < 10) {
-      // Если не совпадают, выведем ошибку (можно использовать SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Длина почтового адреса должна составлять не менее 10 символов.',
-            textAlign: TextAlign.center, // Выравнивание по центру
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Прекращаем выполнение метода
-      return;
-    }
-
-    // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (passwordController!.text.length < 6) {
-      // Если не совпадают, выведем ошибку (можно использовать SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Длина пароля должна составлять не менее 6 символов.',
-            textAlign: TextAlign.center, // Выравнивание по центру
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Прекращаем выполнение метода
-      return;
-    }
-
-    // дописать код для обработки создания аккаунта
-    print('Button pressed ...');
   }
 
   Widget buildRegistrationLink(BuildContext context) {

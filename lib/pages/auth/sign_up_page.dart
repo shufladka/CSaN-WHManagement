@@ -1,3 +1,5 @@
+import 'package:csan/service/auth/form_validator.dart';
+import 'package:csan/widgets/input_decoration_widget.dart';
 import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,46 +22,34 @@ class _SignUpPageState extends State<SignUpPage> {
 
   FocusNode? emailFocusNode;
   TextEditingController? emailController;
-  String? Function(BuildContext, String?)? emailControllerValidator;
-
-  FocusNode? usernameFocusNode;
-  TextEditingController? usernameController;
-  String? Function(BuildContext, String?)? usernameControllerValidator;
 
   FocusNode? passwordFocusNode;
   TextEditingController? passwordController;
   bool passwordVisibility = false; // Инициализируем поле passwordVisibility
-  String? Function(BuildContext, String?)? passwordControllerValidator;
 
   FocusNode? confirmPasswordFocusNode;
   TextEditingController? confirmPasswordController;
   bool confirmPasswordVisibility = false; // Инициализируем поле confirmPasswordVisibility
-  String? Function(BuildContext, String?)? confirmPasswordControllerValidator;
-
-  // инициализация полей сброса ошибок при невалидном вводе
-  String? emailError;
-  String? usernameError;
-  String? passwordError;
-  String? confirmPasswordError;
 
   // значение чекбокса по умолчанию
   bool checkBoxDefaultState = false;
 
   bool isButtonPressed = false;
 
+  // сервис аутентификации пользователя
   final FirebaseAuthService _auth = FirebaseAuthService();
 
+  // обработка перехода через вызов сервиса аутентификации
   void _signUp() async {
 
     String email = emailController!.text;
-    //String? username = usernameController?.text;
     String password = passwordController!.text;
 
     User? user = await _auth.signUpEmailPassword(context, email, password);
 
     if (user != null) {
       print('user is successfully created.');
-      Navigator.pushNamed(context, "sign_in");
+      Navigator.pushReplacementNamed(context, "sign_in");
     } else {
       print('some happend :(');
     }
@@ -72,15 +62,13 @@ class _SignUpPageState extends State<SignUpPage> {
     emailController ??= TextEditingController();
     emailFocusNode ??= FocusNode();
 
-    usernameController ??= TextEditingController();
-    usernameFocusNode ??= FocusNode();
-
     passwordController ??= TextEditingController();
     passwordFocusNode ??= FocusNode();
 
     confirmPasswordController ??= TextEditingController();
     confirmPasswordFocusNode ??= FocusNode();
 
+    // настройка видимости полей пароля и подтверждения пароля по умолчанию
     passwordVisibility = false;
     confirmPasswordVisibility = false;
 
@@ -94,9 +82,6 @@ class _SignUpPageState extends State<SignUpPage> {
     emailFocusNode?.dispose();
     emailController?.dispose();
 
-    usernameFocusNode?.dispose();
-    usernameController?.dispose();
-
     passwordFocusNode?.dispose();
     passwordController?.dispose();
 
@@ -104,21 +89,6 @@ class _SignUpPageState extends State<SignUpPage> {
     confirmPasswordController?.dispose();
     
     super.dispose();
-  }
-
-  // проверка на пустую форму
-  bool isFormEmpty() {
-    if (emailController!.text.isEmpty) {
-      if (usernameController!.text.isEmpty) {
-        if (passwordController!.text.isEmpty) {
-          if (confirmPasswordController!.text.isEmpty) {
-            return true;
-          }
-        }
-      }
-    }
-
-    return false;
   }
   
   @override
@@ -171,7 +141,6 @@ class _SignUpPageState extends State<SignUpPage> {
       children: [
         buildTitle(context),
         buildEmailField(context),
-        //buildNicknameField(context),
         buildPasswordField(context),
         buildConfirmPasswordField(context),
         buildCreateAccountButton(context),
@@ -197,7 +166,6 @@ class _SignUpPageState extends State<SignUpPage> {
           alignment: const AlignmentDirectional(0.00, 0.00),
           child: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(32, 10, 32, 32),
-            //child: buildFormFields(context),
             child: buildSignUpContainer(context),
           ),
         ),
@@ -231,31 +199,12 @@ class _SignUpPageState extends State<SignUpPage> {
         focusNode: emailFocusNode,
         textCapitalization: TextCapitalization.none,
         obscureText: false,
-        decoration: buildInputDecoration(context, 'почтовый адрес'),
+        decoration: InputDecorationBuilder.buildInputDecoration(context, 'почтовый адрес'),
         style: GoogleFonts.montserrat(
           fontSize: 15,
           fontWeight: FontWeight.w600,
         ),
         keyboardType: TextInputType.emailAddress,
-        cursorColor: Theme.of(context).primaryColor,
-      ),
-    );
-  }
-
-  Widget buildNicknameField(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
-      child: TextFormField(
-        controller: usernameController,
-        focusNode: usernameFocusNode,
-        textCapitalization: TextCapitalization.none,
-        obscureText: false,
-        decoration: buildInputDecoration(context, 'псевдоним'),
-        style: GoogleFonts.montserrat(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-        ),
-        keyboardType: TextInputType.name,
         cursorColor: Theme.of(context).primaryColor,
       ),
     );
@@ -293,45 +242,6 @@ class _SignUpPageState extends State<SignUpPage> {
           fontWeight: FontWeight.w600,
         ),
         cursorColor: Colors.black45,
-      ),
-    );
-  }
-
-  InputDecoration buildInputDecoration(BuildContext context, String hintText) {
-    return InputDecoration(
-      hintText: hintText,
-      hintStyle: GoogleFonts.montserrat(
-        color: const Color(0x6222282F),
-        fontWeight: FontWeight.w600,
-        fontSize: 15,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderSide: const BorderSide(
-          color: Color(0xB1F1F4F8),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(0),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: const BorderSide(
-          color: Color(0xB1F1F4F8),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(0),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(
-          color: Color(0xB1F1F4F8),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(0),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderSide: const BorderSide(
-          color: Color(0xB1F1F4F8),
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(0),
       ),
     );
   }
@@ -436,175 +346,31 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  /*
-  // кнопка для добавления пользовательских данных в базу
+  // кнопка для отправки формы для создания нового аккаунта
   Widget buildCreateAccountButton(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) {
-        setState(() {
-          isButtonPressed = true;
-        });
-      },
-      onTapUp: (_) {
-        setState(() {
-          isButtonPressed = false;
-        });
-      },
-      onTapCancel: () {
-        setState(() {
-          isButtonPressed = false;
-        });
-      },
-      onTap: () {
-        // Действия при нажатии на кнопку
-        validateForm(context);
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(top: 20, bottom: 20),
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {
-              // Действия при нажатии на кнопку
-              validateForm(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isButtonPressed ? Colors.grey : Colors.black87,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.zero,
-              ),
-            ),
-            child: const Text(
-              'СОЗДАТЬ АККАУНТ',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-  */
 
-  Widget buildCreateAccountButton(BuildContext context) {
+    // экземпляр класса валидации формы регистрации нового пользователя
+    CustomFormValidator formValidator = CustomFormValidator(
+      emailController: emailController,
+      passwordController: passwordController,
+      confirmPasswordController: confirmPasswordController,
+      needPassword: true,
+      needConfirmPassword: true,
+    );
+
     return BuildButtonWidget(
       buttonText: 'СОЗДАТЬ АККАУНТ',
       onPressed: () {
-        // Вызываем метод для валидации формы регистрации
-        validateForm(context);
+
+        // если форма валидна, переходим к странице входа в аккаунт
+        if (formValidator.validateForm(context)) {
+          _signUp();
+        }
       },
     );
   }
 
-  // Метод для валидации формы
-  void validateForm(BuildContext context) {
-    // Проверяем, пуста ли форма
-    if (isFormEmpty()) {
-      // Если форма пуста, выведем ошибку (можно использовать SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Заполните все поля формы.',
-            textAlign: TextAlign.center, // Выравнивание по центру
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Прекращаем выполнение метода
-      return;
-    }
-
-    // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (emailController!.text.length < 10) {
-      // Если не совпадают, выведем ошибку (можно использовать SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Длина почтового адреса должна составлять не менее 10 символов.',
-            textAlign: TextAlign.center, // Выравнивание по центру
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Прекращаем выполнение метода
-      return;
-    }
-
-    /*
-    // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (_model.usernameController!.text.length < 4) {
-      // Если не совпадают, выведем ошибку (можно использовать SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Длина псевдонима должна составлять не менее 4 символов.',
-            textAlign: TextAlign.center, // Выравнивание по центру
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Прекращаем выполнение метода
-      return;
-    }
-     */
-
-    // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (passwordController!.text.length < 6) {
-      // Если не совпадают, выведем ошибку (можно использовать SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Длина пароля должна составлять не менее 6 символов.',
-            textAlign: TextAlign.center, // Выравнивание по центру
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Прекращаем выполнение метода
-      return;
-    }
-
-    // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (confirmPasswordController!.text.length < 6) {
-      // Если не совпадают, выведем ошибку (можно использовать SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Длина пароля должна составлять не менее 6 символов.',
-            textAlign: TextAlign.center, // Выравнивание по центру
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Прекращаем выполнение метода
-      return;
-    }
-
-    // Проверяем, совпадают ли пароль и подтверждение пароля
-    if (passwordController?.text != confirmPasswordController?.text) {
-      // Если не совпадают, выведем ошибку (можно использовать SnackBar)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Пароли не совпадают.',
-            textAlign: TextAlign.center, // Выравнивание по центру
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      // Прекращаем выполнение метода
-      return;
-    }
-
-    //  код для обработки создания аккаунта
-    print('Button pressed ...');
-
-    _signUp();
-  }
-
+  // кнопка для перехода к странице для входа в аккаунт
   Widget buildSignInLink(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
