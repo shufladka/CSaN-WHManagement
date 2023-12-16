@@ -2,6 +2,7 @@ import 'package:csan/service/auth/clear_user_data.dart';
 import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LobbyPage extends StatefulWidget {
   const LobbyPage({Key? key}) : super(key: key);
@@ -16,46 +17,36 @@ class _LobbyPageState extends State<LobbyPage> {
 
   final unfocusNode = FocusNode();
 
-  FocusNode? emailFocusNode;
-  TextEditingController? emailController;
-
-  // метод для вызова удаления сохраненных данных
-  Future<void> _clearSavedData() async {
-    await ClearUserData().clearSavedData();
-  }
-
-  // вызов метода для очистки сохраненных данных и перехода на страницу входа в приложение
-  void _clearUserData() async {
-    Navigator.pushReplacementNamed(context, "sign_in");
-    _clearSavedData();
-  }
+  // Добавил стрим для отслеживания состояния аутентификации
+  late Stream<User?> _authStream;
 
   @override
   void initState() {
     super.initState();
+    _authStream = FirebaseAuth.instance.authStateChanges();
+    unfocusNode.addListener(() {
+      if (unfocusNode.hasFocus) {
+        unfocusNode.unfocus();
+      }
+    });
+  }
 
-    emailController ??= TextEditingController();
-    emailFocusNode ??= FocusNode();
+  // Метод для вызова удаления сохраненных данных
+  Future<void> _clearSavedData() async {
+    await ClearUserData().clearSavedData();
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
+  // Вызов метода для очистки сохраненных данных и выхода из аккаунта
+  void _clearUserData() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacementNamed(context, "sign_in");
+    _clearSavedData();
   }
 
   @override
   void dispose() {
     super.dispose();
     unfocusNode.dispose();
-
-    emailFocusNode?.dispose();
-    emailController?.dispose();
-  }
-
-  // проверка на пустую форму
-  bool isFormEmpty() {
-    if (emailController!.text.isEmpty) {
-      return true;
-    }
-
-    return false;
   }
 
   @override
@@ -81,10 +72,79 @@ class _LobbyPageState extends State<LobbyPage> {
     );
   }
 
+  /*
+  @override
+  Widget build(BuildContext context) {
+    return Title(
+      title: 'lobby',
+      color: Theme.of(context).primaryColor.withAlpha(0XFF),
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: Colors.white,
+        body: Align(
+          alignment: const AlignmentDirectional(0.00, 0.00),
+          child: SingleChildScrollView(
+            child: StreamBuilder<User?>(
+              stream: _authStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.active) {
+                  final user = snapshot.data;
+
+                  if (user != null) {
+                    // Пользователь аутентифицирован, отображаем содержимое Lobby
+                    return buildLobbyContent(context, user);
+                  } else {
+                    // Пользователь не аутентифицирован, направляем на страницу входа
+                    WidgetsBinding.instance!.addPostFrameCallback((_) {
+                      Navigator.pushReplacementNamed(context, "sign_in");
+                    });
+
+                    return const SizedBox.shrink();
+                  }
+                } else {
+                  // Ожидание состояния аутентификации
+                  return const CircularProgressIndicator();
+                }
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Добавил метод для построения содержимого Lobby
+  Widget buildLobbyContent(BuildContext context, User user) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'Добро пожаловать в Лобби!',
+            style: TextStyle(fontSize: 24.0),
+          ),
+          const SizedBox(height: 16.0),
+          Text(
+            'Пользователь: ${user.displayName}',
+            style: TextStyle(fontSize: 18.0),
+          ),
+          const SizedBox(height: 16.0),
+          // Ваши другие элементы и функциональность страницы
+          buildSubmitButton(context),
+          const SizedBox(height: 16.0),
+          buildClearUserDataButton(context),
+        ],
+      ),
+    );
+  }
+  */
+
   Widget buildSignInContainer(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height * 1,
+      height: MediaQuery.of(context).size.height,
       constraints: const BoxConstraints(
         minWidth: 300,
         maxWidth: 600,

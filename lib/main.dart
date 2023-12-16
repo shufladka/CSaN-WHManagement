@@ -16,6 +16,7 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
+/*
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -36,15 +37,64 @@ class MyApp extends StatelessWidget {
         //   TargetPlatform.windows: NoTransitionsPageTransitionsBuilder(),
         // }),
       ),
-      initialRoute: '/', // Задайте вашу начальную страницу, если нужно
+      initialRoute: 'lobby', // начальная страница
       routes: {
-        '/': (context) => const SignInPage(), // маршруты
+        '/': (context) => const SignInPage(), // начальная страница
         'sign_in': (context) => const SignInPage(), // вход в приложение
         'sign_up': (context) => const SignUpPage(), // регистрация
         'pass_reset': (context) => const PassResetPage(), // сброс пароля
         'lobby':  (context) => const LobbyPage(), // лобби приложения
       },
     );
+  }
+}
+
+ */
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'title',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      initialRoute: '/',
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) {
+            switch (settings.name) {
+              case '/':
+                return const SignInPage();
+              case 'sign_in':
+                return const SignInPage();
+              case 'sign_up':
+                return const SignUpPage();
+              case 'pass_reset':
+                return const PassResetPage();
+              case 'lobby':
+                return const LobbyPage();
+              default:
+                return const SignInPage();
+            }
+          },
+        );
+      },
+      navigatorObservers: [MyNavigatorObserver()],
+    );
+  }
+}
+
+class MyNavigatorObserver extends NavigatorObserver {
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    // Проверка на переход из адресной строки
+    if (previousRoute != null && route.settings.name != previousRoute.settings.name) {
+      print("Attempted navigation via address bar prevented!");
+      Navigator.of(route.navigator!.context).pop();
+    }
   }
 }
 
