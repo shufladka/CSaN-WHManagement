@@ -1,5 +1,5 @@
 import 'package:csan/service/auth/firebase_auth_service.dart';
-import 'package:csan/service/auth/form_validator.dart';
+import 'package:csan/service/auth/form_validation_service.dart';
 import 'package:csan/widgets/input_decoration_widget.dart';
 import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';

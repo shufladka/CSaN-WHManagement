@@ -1,5 +1,5 @@
 import 'package:csan/service/auth/firebase_auth_service.dart';
-import 'package:csan/service/auth/form_validator.dart';
+import 'package:csan/service/auth/form_validation_service.dart';
 import 'package:csan/widgets/input_decoration_widget.dart';
 import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -86,6 +86,7 @@ class _SignInPageState extends State<SignInPage> {
     super.dispose();
   }
 
+  // метод для автозагрузки сохраненных данных
   Future<void> _loadSavedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -97,6 +98,7 @@ class _SignInPageState extends State<SignInPage> {
     });
   }
 
+  // метод для сохранения введенных данных
   Future<void> _saveData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('rememberMe', checkboxValue!);

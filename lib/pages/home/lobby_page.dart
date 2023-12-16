@@ -1,4 +1,4 @@
-import 'package:csan/widgets/input_decoration_widget.dart';
+import 'package:csan/service/auth/clear_user_data.dart';
 import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,9 +15,20 @@ class _LobbyPageState extends State<LobbyPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final unfocusNode = FocusNode();
+
   FocusNode? emailFocusNode;
   TextEditingController? emailController;
-  String? Function(BuildContext, String?)? emailControllerValidator;
+
+  // метод для вызова удаления сохраненных данных
+  Future<void> _clearSavedData() async {
+    await ClearUserData().clearSavedData();
+  }
+
+  // вызов метода для очистки сохраненных данных и перехода на страницу входа в приложение
+  void _clearUserData() async {
+    Navigator.pushReplacementNamed(context, "sign_in");
+    _clearSavedData();
+  }
 
   @override
   void initState() {
@@ -92,8 +103,8 @@ class _LobbyPageState extends State<LobbyPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildTitle(context),
-        //buildEmailField(context),
         buildSubmitButton(context),
+        buildClearUserDataButton(context),
       ],
     );
   }
@@ -140,31 +151,20 @@ class _LobbyPageState extends State<LobbyPage> {
     );
   }
 
-  Widget buildEmailField(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
-      child: TextFormField(
-        controller: emailController,
-        focusNode: emailFocusNode,
-        textCapitalization: TextCapitalization.none,
-        obscureText: false,
-        decoration: InputDecorationBuilder.buildInputDecoration(context, 'почтовый адрес'),
-        style: GoogleFonts.montserrat(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-        ),
-        keyboardType: TextInputType.emailAddress,
-        cursorColor: Theme.of(context).primaryColor,
-      ),
+  Widget buildSubmitButton(BuildContext context) {
+    return BuildButtonWidget(
+      buttonText: 'ПЕРЕЙТИ В МЕНЮ АУТЕНТИФИКАЦИИ',
+      onPressed: () {
+        Navigator.pushReplacementNamed(context, "sign_in");
+      },
     );
   }
 
-  Widget buildSubmitButton(BuildContext context) {
-    return BuildButtonWidget(
-      buttonText: 'ОТПРАВИТЬ ПАРОЛЬ',
+  Widget buildClearUserDataButton(BuildContext context) {
+    return BuildExitButtonWidget(
+      buttonText: 'ОЧИСТИТЬ ДАННЫЕ ПОЛЬЗОВАТЕЛЯ',
       onPressed: () {
-        // Вызываем метод для валидации формы регистрации
-        Navigator.pushReplacementNamed(context, "sign_in");
+        _clearUserData();
       },
     );
   }
