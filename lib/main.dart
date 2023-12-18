@@ -1,3 +1,4 @@
+import 'package:csan/pages/home/test_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 // import 'package:flutter/foundation.dart';
 import 'firebase_options.dart';
@@ -16,41 +17,6 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-/*
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'title',
-      theme: ThemeData(
-        // Здесь вы можете настроить тему приложения, если необходимо
-        primarySwatch: Colors.blue,
-
-        // отключает анимации, но при этом появляются фризы и задержки
-        // pageTransitionsTheme: const PageTransitionsTheme(builders: {
-        //   TargetPlatform.android: NoTransitionsPageTransitionsBuilder(),
-        //   TargetPlatform.iOS: NoTransitionsPageTransitionsBuilder(),
-        //   TargetPlatform.linux: NoTransitionsPageTransitionsBuilder(),
-        //   TargetPlatform.macOS: NoTransitionsPageTransitionsBuilder(),
-        //   TargetPlatform.windows: NoTransitionsPageTransitionsBuilder(),
-        // }),
-      ),
-      initialRoute: 'lobby', // начальная страница
-      routes: {
-        '/': (context) => const SignInPage(), // начальная страница
-        'sign_in': (context) => const SignInPage(), // вход в приложение
-        'sign_up': (context) => const SignUpPage(), // регистрация
-        'pass_reset': (context) => const PassResetPage(), // сброс пароля
-        'lobby':  (context) => const LobbyPage(), // лобби приложения
-      },
-    );
-  }
-}
-
- */
-
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -61,7 +27,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/',
+      initialRoute: 'test',
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
           builder: (context) {
@@ -76,6 +42,8 @@ class MyApp extends StatelessWidget {
                 return const PassResetPage();
               case 'lobby':
                 return const LobbyPage();
+              case 'test':
+                return const TestPage();
               default:
                 return const SignInPage();
             }
@@ -92,7 +60,6 @@ class MyNavigatorObserver extends NavigatorObserver {
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     // Проверка на переход из адресной строки
     if (previousRoute != null && route.settings.name != previousRoute.settings.name) {
-      print("Attempted navigation via address bar prevented!");
       Navigator.of(route.navigator!.context).pop();
     }
   }
