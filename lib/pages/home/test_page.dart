@@ -38,10 +38,8 @@ class _TestPageState extends State<TestPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Title(
-      title: 'test page',
-      color: Colors.white,
-      child: GestureDetector(
+    return Scaffold(
+      body: GestureDetector(
         onTap: () {
           if (unfocusNode.canRequestFocus) {
             FocusScope.of(context).requestFocus(unfocusNode);
@@ -49,42 +47,31 @@ class _TestPageState extends State<TestPage> {
             FocusScope.of(context).unfocus();
           }
         },
-        child: Scaffold(
-          key: scaffoldKey,
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            top: true,
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Align(
-                    alignment: const AlignmentDirectional(0, -1),
-                    child: Container(
-                      width: double.infinity,
-                      constraints: const BoxConstraints(
-                        maxWidth: 1170,
-                        minWidth: 360,
-                      ),
-                      decoration: const BoxDecoration(),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            buildHeader(context),
-                            buildOrderHeader(context),
-                            customStreamBuilder(context),
-                            //emptyTextWidget(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+        child: SafeArea(
+          top: true,
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildHeader(context),
+                    buildOrderHeader(context),
+                    customStreamBuilder(context),
+                    emptyTextWidget(),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 10,
+                child: Center(
+                  child: buildCreateNewOrderButton(context),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -92,6 +79,44 @@ class _TestPageState extends State<TestPage> {
   }
 
   // метод для автоматической подгрузки виджетов заказов из базы данных
+  Widget customStreamBuilder(BuildContext context) {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance.collection('orders').orderBy('number').snapshots(),
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator(); // Показываем индикатор загрузки, пока данные загружаются
+        }
+
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return emptyTextWidget(); // Показываем текст, если данных нет
+        }
+
+        // Если данные есть, обрабатываем их
+        List<Widget> orderWidgets = [];
+        for (QueryDocumentSnapshot doc in snapshot.data!.docs) {
+          // Получаем данные из документа (парсим)
+          String amount = doc['amount'];
+          String date = doc['date'];
+          int number = doc['number'];
+          String state = doc['state'];
+          String weight = doc['weight'];
+
+          // Добавляем виджет с данными в список
+          orderWidgets.add(buildOrderCard(context, doc, amount, date, number, state, weight));
+        }
+
+        // Возвращаем список виджетов
+        return Column(
+          children: orderWidgets,
+        );
+      },
+    );
+  }
+  /*
   Widget customStreamBuilder(BuildContext context) {
     return StreamBuilder(
       stream: FirebaseFirestore.instance.collection('orders').snapshots(),
@@ -119,7 +144,7 @@ class _TestPageState extends State<TestPage> {
           String weight = doc['weight'];
 
           // Добавляем виджет с данными в список
-          orderWidgets.add(buildOrderCard(context, amount, date, number, state, weight));
+          orderWidgets.add(buildOrderCard(context, doc, amount, date, number, state, weight));
         }
 
         // Возвращаем список виджетов
@@ -129,6 +154,8 @@ class _TestPageState extends State<TestPage> {
       },
     );
   }
+
+   */
 
   Widget buildFirstButton(BuildContext context) {
     return Align(
@@ -145,7 +172,7 @@ class _TestPageState extends State<TestPage> {
             elevation: 3,
           ),
           child: Text(
-            'Выйти',
+            'Назад',
             style: GoogleFonts.outfit(
               color: Colors.white,
             ),
@@ -155,36 +182,43 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
-  Widget buildSecondButton(BuildContext context) {
+  // виджет кнопки для создания нового заказа
+  Widget buildCreateNewOrderButton(BuildContext context) {
     return Align(
-      alignment: const AlignmentDirectional(0, 0),
+      //alignment: const AlignmentDirectional(0, 0),
       child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(
-            24, 0, 0, 0),
+        padding: const EdgeInsetsDirectional.fromSTEB(70, 0, 70, 0), // Изменил отступы
         child: ElevatedButton(
           onPressed: () {
             //print('Button pressed ...');
             showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return const EditOrderDialog();
-                },
+              context: context,
+              builder: (BuildContext context) {
+                return const EditOrderDialog();
+              },
             );
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
+            backgroundColor: Colors.black87,
             elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8), // устанавливаем радиус закругления
+            ),
+            minimumSize: const Size(double.infinity, 55), // растягиваем кнопку по ширине
           ),
           child: Text(
-            'Выйти',
-            style: GoogleFonts.outfit(
+            'ДОБАВИТЬ НОВЫЙ ЗАКАЗ',
+            style: GoogleFonts.montserrat(
               color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
       ),
     );
   }
+
 
   Widget buildWarehouseNameText(BuildContext context) {
     return Align(
@@ -246,7 +280,7 @@ class _TestPageState extends State<TestPage> {
           mainAxisSize: MainAxisSize.max,
           children: [
             buildFirstButton(context),
-            buildSecondButton(context),
+            //buildSecondButton(context),
           ],
         ),
         Expanded(
@@ -349,30 +383,42 @@ class _TestPageState extends State<TestPage> {
   // добавляет пустое поле внизу страницы
   Widget emptyTextWidget() {
     return const Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(0, 20, 0, 20),
+      padding: EdgeInsetsDirectional.fromSTEB(0, 25, 0, 25),
       child: Text(''),
     );
   }
 
-  // виджет карточки заказа
-  Widget buildOrderCard(BuildContext context, String amount, String date, String number, String state, String weight) {
 
-    /*
+  // виджет карточки заказа
+  Widget buildOrderCard(BuildContext context, QueryDocumentSnapshot doc, String amount, String date, int number, String state, String weight) {
+
+    String amount = doc['amount'];
+    String date = doc['date'];
+    int number = doc['number'];
+    String state = doc['state'];
+    String weight = doc['weight'];
+
     return InkWell(
       onTap: () {
         // обработка нажатия на виджет заказа
+        /*
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return const EditOrderDialog();
           },
         );
+
+         */
+        String documentId = doc.id;
+        print('Document ID: $documentId');
+        //print("button pressed");
       },
 
-     */
 
-      //child: Padding(
-    return Padding(
+
+      child: Padding(
+    //return Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(16, 5, 16, 5),
         child: Container(
           width: MediaQuery.of(context).size.width,
@@ -427,18 +473,18 @@ class _TestPageState extends State<TestPage> {
                   ),
                 Expanded(
                   flex: 2,
-                  child: _buildColumn(context, amount),
+                  child: _buildColumn(context, amount, state),
                 ),
               ],
             ),
           ),
         ),
-      //),
+      ),
     );
   }
 
 
-  Widget _buildRichText(BuildContext context, String number) {
+  Widget _buildRichText(BuildContext context, int number) {
     return RichText(
       text: TextSpan(
         children: [
@@ -447,7 +493,7 @@ class _TestPageState extends State<TestPage> {
             style: TextStyle(),
           ),
           TextSpan(
-            text: number,
+            text: number.toString(),
             style: const TextStyle(
               color: Color(0xFF6F61EF),
               fontWeight: FontWeight.bold,
@@ -491,7 +537,7 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
-  Widget _buildColumn(BuildContext context, String amount) {
+  Widget _buildColumn(BuildContext context, String amount, String state) {
     return Column(
       mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -508,7 +554,7 @@ class _TestPageState extends State<TestPage> {
         if (MediaQuery.of(context).size.width <= 650)
           Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-            child: _buildContainer('Отправлено', const Color(0x4D9489F5)),
+            child: _buildContainer(state, const Color(0x4D9489F5)),
           ),
       ],
     );
