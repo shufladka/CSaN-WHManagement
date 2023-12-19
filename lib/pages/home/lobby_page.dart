@@ -1,4 +1,4 @@
-import 'package:csan/service/auth/clear_user_data.dart';
+import 'package:csan/service/auth/clear_user_data_service.dart';
 import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';

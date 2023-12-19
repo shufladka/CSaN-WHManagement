@@ -216,7 +216,6 @@ class _SignInPageState extends State<SignInPage> {
         focusNode: emailFocusNode,
         textCapitalization: TextCapitalization.none,
         obscureText: false,
-        //decoration: buildInputDecoration(context, 'почтовый адрес или псевдоним'),
         decoration: InputDecorationBuilder.buildInputDecoration(context, 'почтовый адрес'),
         style: GoogleFonts.montserrat(
           fontSize: 15,

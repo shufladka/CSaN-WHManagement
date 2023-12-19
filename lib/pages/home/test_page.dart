@@ -1,8 +1,11 @@
+import 'package:csan/widgets/edit_order_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class TestPage extends StatefulWidget {
-  const TestPage({Key? key}) : super(key: key);
+  const TestPage({super.key});
 
   @override
   _TestPageState createState() => _TestPageState();
@@ -12,9 +15,18 @@ class _TestPageState extends State<TestPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final unfocusNode = FocusNode();
 
+  // подключение к базе данных Firebase
+  void initFirebase() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await Firebase.initializeApp();
+  }
+
   @override
   void initState() {
     super.initState();
+
+    initFirebase();
+
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
 
@@ -63,26 +75,8 @@ class _TestPageState extends State<TestPage> {
                           children: [
                             buildHeader(context),
                             buildOrderHeader(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            buildOrderCard(context),
-                            emptyTextWidget(),
+                            customStreamBuilder(context),
+                            //emptyTextWidget(),
                           ],
                         ),
                       ),
@@ -94,6 +88,45 @@ class _TestPageState extends State<TestPage> {
           ),
         ),
       ),
+    );
+  }
+
+  // метод для автоматической подгрузки виджетов заказов из базы данных
+  Widget customStreamBuilder(BuildContext context) {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance.collection('orders').snapshots(),
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator(); // Показываем индикатор загрузки, пока данные загружаются
+        }
+
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return emptyTextWidget(); // Показываем текст, если данных нет
+        }
+
+        // Если данные есть, обрабатываем их
+        List<Widget> orderWidgets = [];
+        for (QueryDocumentSnapshot doc in snapshot.data!.docs) {
+          // Получаем данные из документа (парсим)
+          String amount = doc['amount'];
+          String date = doc['date'];
+          String number = doc['number'];
+          String state = doc['state'];
+          String weight = doc['weight'];
+
+          // Добавляем виджет с данными в список
+          orderWidgets.add(buildOrderCard(context, amount, date, number, state, weight));
+        }
+
+        // Возвращаем список виджетов
+        return Column(
+          children: orderWidgets,
+        );
+      },
     );
   }
 
@@ -130,7 +163,13 @@ class _TestPageState extends State<TestPage> {
             24, 0, 0, 0),
         child: ElevatedButton(
           onPressed: () {
-            print('Button pressed ...');
+            //print('Button pressed ...');
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return const EditOrderDialog();
+                },
+            );
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
@@ -315,84 +354,101 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
+  // виджет карточки заказа
+  Widget buildOrderCard(BuildContext context, String amount, String date, String number, String state, String weight) {
 
-  Widget buildOrderCard(BuildContext context) {
+    /*
+    return InkWell(
+      onTap: () {
+        // обработка нажатия на виджет заказа
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const EditOrderDialog();
+          },
+        );
+      },
+
+     */
+
+      //child: Padding(
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 5, 16, 5),
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: const Color(0xFFE5E7EB),
-            width: 2,
+        padding: const EdgeInsetsDirectional.fromSTEB(16, 5, 16, 5),
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: const Color(0xFFE5E7EB),
+              width: 2,
+            ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                flex: 4,
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 12, 0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildRichText(context),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
-                        child: Text(
-                          'Пн, 03.07.2023',
-                          style: GoogleFonts.montserrat(
-                            color: const Color(0xFF606A85),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 12),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  flex: 4,
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 12, 0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildRichText(context, number),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
+                          child: Text(
+                            date,  // дата из БД
+                            style: GoogleFonts.montserrat(
+                              color: const Color(0xFF606A85),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              if (MediaQuery.of(context).size.width > 650)
-                Expanded(
-                  flex: 1,
-                  child: _buildContainer('2,5 кг', const Color(0xFFF1F4F8)),
-                ),
-              if (MediaQuery.of(context).size.width > 650)
+                if (MediaQuery.of(context).size.width > 650)
+                  Expanded(
+                    flex: 1,
+                    child: _buildContainer('$weight г', const Color(0xFFF1F4F8)),
+                  ),
+                if (MediaQuery.of(context).size.width > 650)
+                  Expanded(
+                    flex: 2,
+                    child: _buildContainer(state, const Color(0x4D9489F5)),
+                  ),
                 Expanded(
                   flex: 2,
-                  // child: _buildContainer('Shipped', const Color(0x4D9489F5), const Color(0xFF6F61EF)),
-                  child: _buildContainer('Отправлено', const Color(0x4D9489F5)),
+                  child: _buildColumn(context, amount),
                 ),
-              Expanded(
-                flex: 2,
-                child: _buildColumn(context),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
+      //),
     );
   }
 
-  Widget _buildRichText(BuildContext context) {
+
+  Widget _buildRichText(BuildContext context, String number) {
     return RichText(
       text: TextSpan(
-        children: const [
-          TextSpan(
+        children: [
+          const TextSpan(
             text: 'Заказ №: ',
             style: TextStyle(),
           ),
           TextSpan(
-            text: '124',
-            style: TextStyle(
+            text: number,
+            style: const TextStyle(
               color: Color(0xFF6F61EF),
               fontWeight: FontWeight.bold,
             ),
@@ -435,13 +491,13 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
-  Widget _buildColumn(BuildContext context) {
+  Widget _buildColumn(BuildContext context, String amount) {
     return Column(
       mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          'BYN 150',
+          'BYN $amount',
           textAlign: TextAlign.end,
           style: GoogleFonts.montserrat(
             color: const Color(0xFF15161E),
@@ -457,6 +513,4 @@ class _TestPageState extends State<TestPage> {
       ],
     );
   }
-
-
 }
