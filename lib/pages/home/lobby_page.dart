@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:csan/service/auth/clear_user_data_service.dart';
+import 'package:csan/service/auth/firebase_auth_service.dart';
 import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,13 +19,14 @@ class _LobbyPageState extends State<LobbyPage> {
 
   final unfocusNode = FocusNode();
 
-  // Добавил стрим для отслеживания состояния аутентификации
-  late Stream<User?> _authStream;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuthService firebaseAuthService = FirebaseAuthService();
 
   @override
   void initState() {
     super.initState();
-    _authStream = FirebaseAuth.instance.authStateChanges();
+
     unfocusNode.addListener(() {
       if (unfocusNode.hasFocus) {
         unfocusNode.unfocus();
@@ -98,7 +101,8 @@ class _LobbyPageState extends State<LobbyPage> {
         buildSubmitButton(context),
         buildTestButton(context),
         //getNewNameToCurrentUserButton(context),
-        // if (FirebaseAuth.instance.currentUser!.displayName == 'administrator')
+
+        if (firebaseAuthService.getUserRole(_auth.currentUser!.uid) == 'administrator')
           buildAdminPanelPageButton(context),
       ],
     );

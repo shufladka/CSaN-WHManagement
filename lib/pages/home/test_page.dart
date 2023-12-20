@@ -1,3 +1,4 @@
+import 'package:csan/service/auth/firebase_auth_service.dart';
 import 'package:csan/widgets/edit_order_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,10 @@ class TestPage extends StatefulWidget {
 class _TestPageState extends State<TestPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final unfocusNode = FocusNode();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuthService firebaseAuthService = FirebaseAuthService();
 
   // подключение к базе данных Firebase
   void initFirebase() async {
@@ -161,6 +166,7 @@ class _TestPageState extends State<TestPage> {
                     ),
 
                     // добавление новых заказов доступно только администратору
+                    if (firebaseAuthService.getUserRole(_auth.currentUser!.uid) == 'administrator')
                     // if (FirebaseAuth.instance.currentUser!.displayName == 'administrator')
                     //if (FirebaseAuth.instance.currentUser!.displayName == 'administrator' || FirebaseAuth.instance.currentUser!.displayName == 'user')
                       Positioned(
@@ -476,8 +482,11 @@ class _TestPageState extends State<TestPage> {
         );
 
          */
-        String documentId = doc.id;
-        print('Document ID: $documentId');
+        // обработка нажатия доступна только привилегированным пользователям
+        if (firebaseAuthService.getUserRole(_auth.currentUser!.uid) == 'administrator') {
+          String documentId = doc.id;
+          print('Document ID: $documentId');
+        }
         //print("button pressed");
       },
 
