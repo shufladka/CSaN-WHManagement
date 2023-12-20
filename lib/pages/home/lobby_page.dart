@@ -94,8 +94,11 @@ class _LobbyPageState extends State<LobbyPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildTitle(context),
-        buildSubmitButton(context),
         buildClearUserDataButton(context),
+        buildSubmitButton(context),
+        buildTestButton(context),
+        //getNewNameToCurrentUserButton(context),
+        getDisplayCurrentUserNameButton(context),
       ],
     );
   }
@@ -159,4 +162,54 @@ class _LobbyPageState extends State<LobbyPage> {
       },
     );
   }
+
+  Widget buildTestButton(BuildContext context) {
+    return BuildButtonWidget(
+      buttonText: 'ПЕРЕЙТИ В МЕНЮ ЗАКАЗОВ',
+      onPressed: () {
+        Navigator.pushReplacementNamed(context, "test");
+      },
+    );
+  }
+
+  Widget getDisplayCurrentUserNameButton(BuildContext context) {
+    return BuildButtonWidget(
+      buttonText: 'ДАТЬ ПРАВА АДМИНИСТРАТОРА',
+      onPressed: () {
+        //Navigator.pushReplacementNamed(context, "test");
+        print(FirebaseAuth.instance.currentUser!.displayName);
+      },
+    );
+  }
+
+  /*
+  Widget getNewNameToCurrentUserButton(BuildContext context) {
+    return BuildButtonWidget(
+      buttonText: 'ДАТЬ ПРАВА АДМИНИСТРАТОРА',
+      onPressed: () {
+        //Navigator.pushReplacementNamed(context, "test");
+        setDisplayName('administrator');
+      },
+    );
+  }
+
+  void setDisplayName(String displayName) async {
+    try {
+      // Получаем текущего пользователя
+      User? user = FirebaseAuth.instance.currentUser;
+
+      // Обновляем профиль пользователя с новым displayName
+      await user?.updateProfile(displayName: displayName);
+
+      // Обновляем информацию о пользователе в Firestore или другом месте, где хранятся данные пользователя
+
+      // Печатаем успешное сообщение
+      print('displayName успешно обновлен: $displayName');
+    } catch (e) {
+      // Обработка ошибок при установке displayName
+      print('Ошибка при обновлении displayName: $e');
+    }
+  }
+
+   */
 }

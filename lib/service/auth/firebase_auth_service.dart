@@ -31,6 +31,9 @@ class FirebaseAuthService {
         ),
       );
 
+      // по умолчанию каждый новый пользователь имеет права user'a
+      credential.user?.updateDisplayName('user');
+
       return credential.user;
 
     } catch (exc) {

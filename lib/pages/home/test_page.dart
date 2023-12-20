@@ -1,4 +1,5 @@
 import 'package:csan/widgets/edit_order_dialog.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -36,10 +37,11 @@ class _TestPageState extends State<TestPage> {
     super.dispose();
   }
 
+  /*
   @override
   Widget build(BuildContext context) {
     return Title(
-      title: 'test page',
+      title: 'test',
       color: Colors.white,
       child: GestureDetector(
         onTap: () {
@@ -105,6 +107,79 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
+   */
+  @override
+  Widget build(BuildContext context) {
+    return Title(
+      title: 'test',
+      color: Colors.white,
+      child: GestureDetector(
+        onTap: () {
+          if (unfocusNode.canRequestFocus) {
+            FocusScope.of(context).requestFocus(unfocusNode);
+          } else {
+            FocusScope.of(context).unfocus();
+          }
+        },
+        child: Scaffold(
+          key: scaffoldKey,
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            top: true,
+            child: Center(
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(
+                  maxWidth: 1170, // Set your desired maximum width
+                ),
+                child: Stack(
+                  children: [
+                    Expanded(
+                      child: Align(
+                        alignment: const AlignmentDirectional(0, -1),
+                        child: Container(
+                          width: double.infinity,
+                          constraints: const BoxConstraints(
+                            maxWidth: 1170,
+                            minWidth: 360,
+                          ),
+                          decoration: const BoxDecoration(),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                buildHeader(context),
+                                buildOrderHeader(context),
+                                customStreamBuilder(context),
+                                emptyTextWidget(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // добавление новых заказов доступно только администратору
+                    if (FirebaseAuth.instance.currentUser!.displayName == 'administrator')
+                    //if (FirebaseAuth.instance.currentUser!.displayName == 'administrator' || FirebaseAuth.instance.currentUser!.displayName == 'user')
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 10,
+                        child: Center(
+                          child: buildCreateNewOrderButton(context),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
 
   // метод для автоматической подгрузки виджетов заказов из базы данных
@@ -113,7 +188,9 @@ class _TestPageState extends State<TestPage> {
       stream: FirebaseFirestore.instance.collection('orders').orderBy('number').snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator(); // оказываем индикатор загрузки, пока данные загружаются
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
         }
 
         if (snapshot.hasError) {
@@ -155,6 +232,7 @@ class _TestPageState extends State<TestPage> {
         child: ElevatedButton(
           onPressed: (){
             print('Button pressed ...');
+            Navigator.pushReplacementNamed(context, "lobby");
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.red,
@@ -269,7 +347,6 @@ class _TestPageState extends State<TestPage> {
           mainAxisSize: MainAxisSize.max,
           children: [
             buildFirstButton(context),
-            //buildSecondButton(context),
           ],
         ),
         Expanded(

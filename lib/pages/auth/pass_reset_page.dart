@@ -114,6 +114,7 @@ class _PassResetPageState extends State<PassResetPage> {
         buildTitle(context),
         buildEmailField(context),
         buildSubmitButton(context),
+        buildReturnButton(context),
       ],
     );
   }
@@ -199,6 +200,15 @@ class _PassResetPageState extends State<PassResetPage> {
         if (formValidator.validateForm(context)) {
           _passwordReset();
         }
+      },
+    );
+  }
+
+  Widget buildReturnButton(BuildContext context) {
+    return BuildExitButtonWidget(
+      buttonText: 'ВЕРНУТЬСЯ',
+      onPressed: () {
+        Navigator.pushReplacementNamed(context, "sign_in");
       },
     );
   }

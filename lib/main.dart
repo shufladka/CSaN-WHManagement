@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: 'test',
+      initialRoute: '/',
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
           builder: (context) {
