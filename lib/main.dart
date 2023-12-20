@@ -57,6 +57,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// метод, который следит за переходами между страницами
 class MyNavigatorObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {

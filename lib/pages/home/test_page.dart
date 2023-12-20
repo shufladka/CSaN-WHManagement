@@ -38,8 +38,10 @@ class _TestPageState extends State<TestPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: GestureDetector(
+    return Title(
+      title: 'test page',
+      color: Colors.white,
+      child: GestureDetector(
         onTap: () {
           if (unfocusNode.canRequestFocus) {
             FocusScope.of(context).requestFocus(unfocusNode);
@@ -47,36 +49,63 @@ class _TestPageState extends State<TestPage> {
             FocusScope.of(context).unfocus();
           }
         },
-        child: SafeArea(
-          top: true,
-          child: Stack(
-            children: [
-              SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: Scaffold(
+          key: scaffoldKey,
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            top: true,
+            child: Center(
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(
+                  maxWidth: 1170, // Set your desired maximum width
+                ),
+                child: Stack(
                   children: [
-                    buildHeader(context),
-                    buildOrderHeader(context),
-                    customStreamBuilder(context),
-                    emptyTextWidget(),
+                    Expanded(
+                      child: Align(
+                        alignment: const AlignmentDirectional(0, -1),
+                        child: Container(
+                          width: double.infinity,
+                          constraints: const BoxConstraints(
+                            maxWidth: 1170,
+                            minWidth: 360,
+                          ),
+                          decoration: const BoxDecoration(),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                buildHeader(context),
+                                buildOrderHeader(context),
+                                customStreamBuilder(context),
+                                emptyTextWidget(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 10,
+                      child: Center(
+                        child: buildCreateNewOrderButton(context),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 10,
-                child: Center(
-                  child: buildCreateNewOrderButton(context),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
+
+
 
   // метод для автоматической подгрузки виджетов заказов из базы данных
   Widget customStreamBuilder(BuildContext context) {
@@ -84,7 +113,7 @@ class _TestPageState extends State<TestPage> {
       stream: FirebaseFirestore.instance.collection('orders').orderBy('number').snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator(); // Показываем индикатор загрузки, пока данные загружаются
+          return const CircularProgressIndicator(); // оказываем индикатор загрузки, пока данные загружаются
         }
 
         if (snapshot.hasError) {
@@ -116,46 +145,6 @@ class _TestPageState extends State<TestPage> {
       },
     );
   }
-  /*
-  Widget customStreamBuilder(BuildContext context) {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('orders').snapshots(),
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator(); // Показываем индикатор загрузки, пока данные загружаются
-        }
-
-        if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        }
-
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return emptyTextWidget(); // Показываем текст, если данных нет
-        }
-
-        // Если данные есть, обрабатываем их
-        List<Widget> orderWidgets = [];
-        for (QueryDocumentSnapshot doc in snapshot.data!.docs) {
-          // Получаем данные из документа (парсим)
-          String amount = doc['amount'];
-          String date = doc['date'];
-          String number = doc['number'];
-          String state = doc['state'];
-          String weight = doc['weight'];
-
-          // Добавляем виджет с данными в список
-          orderWidgets.add(buildOrderCard(context, doc, amount, date, number, state, weight));
-        }
-
-        // Возвращаем список виджетов
-        return Column(
-          children: orderWidgets,
-        );
-      },
-    );
-  }
-
-   */
 
   Widget buildFirstButton(BuildContext context) {
     return Align(
@@ -164,7 +153,7 @@ class _TestPageState extends State<TestPage> {
         padding: const EdgeInsetsDirectional.fromSTEB(
             24, 0, 0, 10),
         child: ElevatedButton(
-          onPressed: () {
+          onPressed: (){
             print('Button pressed ...');
           },
           style: ElevatedButton.styleFrom(
@@ -189,7 +178,7 @@ class _TestPageState extends State<TestPage> {
       child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(70, 0, 70, 0), // Изменил отступы
         child: ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             //print('Button pressed ...');
             showDialog(
               context: context,
