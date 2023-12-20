@@ -70,7 +70,7 @@ class _PassResetPageState extends State<PassResetPage> {
   @override
   Widget build(BuildContext context) {
     return Title(
-      title: 'pass_reset',
+      title: 'Сброс пароля',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
       child: GestureDetector(
         onTap: () => unfocusNode.canRequestFocus

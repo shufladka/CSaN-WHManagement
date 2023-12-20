@@ -94,7 +94,7 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Title(
-      title: 'sign_up',
+      title: 'Регистрация',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
       child: GestureDetector(
         onTap: () => unfocusNode.canRequestFocus

@@ -4,26 +4,24 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class LobbyPage extends StatefulWidget {
-  const LobbyPage({Key? key}) : super(key: key);
+class AdminPanelPage extends StatefulWidget {
+  const AdminPanelPage({super.key});
 
   @override
-  _LobbyPageState createState() => _LobbyPageState();
+  _AdminPanelPageState createState() => _AdminPanelPageState();
 }
 
-class _LobbyPageState extends State<LobbyPage> {
+class _AdminPanelPageState extends State<AdminPanelPage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final unfocusNode = FocusNode();
 
-  // Добавил стрим для отслеживания состояния аутентификации
-  late Stream<User?> _authStream;
 
   @override
   void initState() {
     super.initState();
-    _authStream = FirebaseAuth.instance.authStateChanges();
+
     unfocusNode.addListener(() {
       if (unfocusNode.hasFocus) {
         unfocusNode.unfocus();
@@ -52,7 +50,7 @@ class _LobbyPageState extends State<LobbyPage> {
   @override
   Widget build(BuildContext context) {
     return Title(
-      title: 'Лобби',
+      title: 'Панель администратора',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
       child: GestureDetector(
         onTap: () => unfocusNode.canRequestFocus
@@ -94,12 +92,13 @@ class _LobbyPageState extends State<LobbyPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildTitle(context),
-        buildClearUserDataButton(context),
-        buildSubmitButton(context),
-        buildTestButton(context),
+        getDisplayCurrentUserNameButton(context),
+        buildLobbyPageButton(context),
+
+        //buildClearUserDataButton(context),
+        //buildSubmitButton(context),
+        //buildTestButton(context),
         //getNewNameToCurrentUserButton(context),
-        // if (FirebaseAuth.instance.currentUser!.displayName == 'administrator')
-          buildAdminPanelPageButton(context),
       ],
     );
   }
@@ -134,7 +133,7 @@ class _LobbyPageState extends State<LobbyPage> {
       child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 40),
         child: Text(
-          'ЛОББИ',
+          'ПАНЕЛЬ АДМИНИСТРАТОРА',
           textAlign: TextAlign.center,
           style: GoogleFonts.montserrat(
             fontSize: 20,
@@ -164,27 +163,27 @@ class _LobbyPageState extends State<LobbyPage> {
     );
   }
 
-  Widget buildTestButton(BuildContext context) {
+  Widget buildLobbyPageButton(BuildContext context) {
     return BuildButtonWidget(
-      buttonText: 'ПЕРЕЙТИ В МЕНЮ ЗАКАЗОВ',
+      buttonText: 'ВЕРНУТЬСЯ В ЛОББИ',
       onPressed: () {
-        Navigator.pushReplacementNamed(context, "test");
+        Navigator.pushReplacementNamed(context, "lobby");
       },
     );
   }
 
-  Widget buildAdminPanelPageButton(BuildContext context) {
+  Widget getDisplayCurrentUserNameButton(BuildContext context) {
     return BuildButtonWidget(
-      buttonText: 'ПАНЕЛЬ АДМИНИСТРАТОРА',
+      buttonText: 'ПРАВА НОВЫХ ПОЛЬЗОВАТЕЛЕЙ',
       onPressed: () {
-        //Navigator.pushReplacementNamed(context, "test");
+        Navigator.pushReplacementNamed(context, "default_role");
         //print(FirebaseAuth.instance.currentUser!.displayName);
-        Navigator.pushReplacementNamed(context, "admin_panel");
+
       },
     );
   }
 
-  /*
+/*
   Widget getNewNameToCurrentUserButton(BuildContext context) {
     return BuildButtonWidget(
       buttonText: 'ДАТЬ ПРАВА АДМИНИСТРАТОРА',

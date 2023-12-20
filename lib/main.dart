@@ -1,3 +1,5 @@
+import 'package:csan/pages/admin_panel/admin_panel_page.dart';
+import 'package:csan/pages/admin_panel/set_default_role_page.dart';
 import 'package:csan/pages/home/test_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -46,6 +48,10 @@ class MyApp extends StatelessWidget {
                 return const TestPage();
               case 'table':
                 return const MyTablePage();
+              case 'admin_panel':
+                return const AdminPanelPage();
+              case 'default_role':
+                return const SetDefaultRolePage();
               default:
                 return const SignInPage();
             }

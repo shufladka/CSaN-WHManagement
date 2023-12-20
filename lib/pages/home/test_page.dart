@@ -161,7 +161,7 @@ class _TestPageState extends State<TestPage> {
                     ),
 
                     // добавление новых заказов доступно только администратору
-                    if (FirebaseAuth.instance.currentUser!.displayName == 'administrator')
+                    // if (FirebaseAuth.instance.currentUser!.displayName == 'administrator')
                     //if (FirebaseAuth.instance.currentUser!.displayName == 'administrator' || FirebaseAuth.instance.currentUser!.displayName == 'user')
                       Positioned(
                         left: 0,

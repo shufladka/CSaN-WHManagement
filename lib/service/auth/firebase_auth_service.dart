@@ -1,10 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class FirebaseAuthService {
 
-  FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // сохранение нового пользователя в базу пользователей
   Future<User?> signUpEmailPassword(BuildContext context, String email, String password) async {
@@ -13,6 +15,20 @@ class FirebaseAuthService {
 
       // аккаунта не существует, создаем новый аккаунт
       UserCredential credential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+
+      // Получаем роль из таблицы default_role
+      String? defaultRole = await getDefaultRole();
+
+      if (defaultRole == null) {
+        print('Не удалось получить роль из таблицы default_role.');
+        return null;
+      }
+
+      // сохраняем адрес электронной почты пользователя в Firestore в коллекции 'users'
+      await FirebaseFirestore.instance.collection('users').doc(credential.user!.uid).set({
+        'email': email,
+        'role': defaultRole,
+      });
 
       // вывод сообщения об успешном создании нового аккаунта
       ScaffoldMessenger.of(context).showSnackBar(
@@ -30,9 +46,6 @@ class FirebaseAuthService {
           backgroundColor: Colors.green,
         ),
       );
-
-      // по умолчанию каждый новый пользователь имеет права user'a
-      credential.user?.updateDisplayName('user');
 
       return credential.user;
 
@@ -149,5 +162,74 @@ class FirebaseAuthService {
     }
 
     return null;
+  }
+
+  // получение прав доступа пользователя при сравнении данных в Firebase Firestore и Firebase Auth
+  Future<String?> getUserRole(String uid) async {
+    try {
+
+      // проверяем, есть ли текущий пользователь
+      User? currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        print('Текущий пользователь не найден.');
+        return null;
+      }
+
+      // получаем документ пользователя из базы данных
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(uid).get();
+
+      if (userDoc.exists) {
+
+        // роль пользователя хранится в поле 'role'
+        String? userRole = userDoc['role'];
+
+        if (userRole != null) {
+
+          // устанавливаем роль текущему пользователю (опционально)
+          await currentUser.updateDisplayName(userRole);
+
+          return userRole;
+        } else {
+          print('Поле "role" не найдено в документе пользователя.');
+          return null;
+        }
+      } else {
+        print('Документ пользователя не найден.');
+        return null;
+      }
+    } catch (e) {
+      print('Ошибка при получении роли пользователя: $e');
+      return null;
+    }
+  }
+
+  // получение роли пользователя по умолчанию из таблицы default_role
+  Future<String?> getDefaultRole() async {
+    try {
+      DocumentSnapshot defaultRoleDoc = await _firestore.collection('default_role').doc('0epnU1hXUOjTKgjmTsQh').get();
+
+      if (defaultRoleDoc.exists) {
+        // роль хранится в поле 'role'
+        return defaultRoleDoc['role'];
+      } else {
+        print('Документ с ролями не найден.');
+        return null;
+      }
+    } catch (e) {
+      print('Ошибка при получении роли из таблицы default_role: $e');
+      return null;
+    }
+  }
+
+  // Установка роли пользователя в таблице default_role
+  Future<void> setDefaultRole(String role) async {
+    try {
+      await _firestore.collection('default_role').doc('0epnU1hXUOjTKgjmTsQh').update({
+        'role': role,
+      });
+      print('Роль успешно обновлена в таблице default_role.');
+    } catch (e) {
+      print('Ошибка при обновлении роли в таблице default_role: $e');
+    }
   }
 }
