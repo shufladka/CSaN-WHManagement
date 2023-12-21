@@ -1,11 +1,9 @@
 import 'package:csan/service/auth/firebase_auth_service.dart';
 import 'package:csan/widgets/edit_order_dialog.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:equatable/equatable.dart';
 
 class TestPage extends StatefulWidget {
   const TestPage({super.key});
@@ -16,10 +14,7 @@ class TestPage extends StatefulWidget {
 
 class _TestPageState extends State<TestPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  final unfocusNode = FocusNode();
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late final FirebaseAuthService _authService = FirebaseAuthService();
 
   String rightRole = 'administrator';
@@ -41,33 +36,26 @@ class _TestPageState extends State<TestPage> {
 
   @override
   void dispose() {
-    unfocusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-
-    return Scaffold(
-      key: scaffoldKey,
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        top: true,
-        child: GestureDetector(
-          onTap: () {
-            if (unfocusNode.canRequestFocus) {
-              FocusScope.of(context).requestFocus(unfocusNode);
-            } else {
-              FocusScope.of(context).unfocus();
-            }
-          },
+    return Title(
+      title: 'тест',
+      color: Theme.of(context).primaryColor.withAlpha(0XFF),
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          top: true,
           child: Center(
             child: Container(
               width: double.infinity,
               constraints: const BoxConstraints(
                 maxWidth: 1170, // Set your desired maximum width
               ),
-              child: checkingCreateNewOrderButton(context, rightRole),
+              child: checkingForPrivilegRole(context, rightRole),
             ),
           ),
         ),
@@ -75,24 +63,27 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
-  // отрисовка страницы заказов
-  FutureBuilder<bool> checkingCreateNewOrderButton(BuildContext context, String rightRole) {
+  // отрисовка страницы заказов осуществляется на основе прав пользователей
+  FutureBuilder<bool> checkingForPrivilegRole(BuildContext context, String rightRole) {
     return FutureBuilder<bool>(
       future: _authService.isItRightRole(rightRole),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // Показываем анимацию загрузки, если привилегированная роль не обнаружена
+
+          // показываем анимацию загрузки, если привилегированная роль не обнаружена
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        // Проверяем результат и строим виджеты в зависимости от него
+        // проверяем результат и строим виджеты в зависимости от него
         if (snapshot.data == true) {
-          // Если привилегированная роль обнаружена, показываем полную страницу
+
+          // если привилегированная роль обнаружена, показываем полную страницу
           return buildFullPage(context);
         } else {
-          // Если привилегированная роль не обнаружена, показываем страницу без кнопки создания нового заказа
+
+          // если привилегированная роль не обнаружена, показываем страницу без кнопки создания нового заказа
           return buildPageWithoutCreateButton(context);
         }
       },
@@ -357,7 +348,7 @@ class _TestPageState extends State<TestPage> {
       child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 24, 0),
         child: Text(
-          'Пункт №42',
+          'Пункт №NaN',
           style: GoogleFonts.montserrat(
             color: Colors.black87,
             fontSize: 28,
@@ -374,7 +365,7 @@ class _TestPageState extends State<TestPage> {
       child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 24, 0),
         child: Text(
-          'г. Солигорск',
+          'г. NaN',
           style: GoogleFonts.montserrat(
             color: Colors.black87,
             fontSize: 18,
@@ -391,7 +382,7 @@ class _TestPageState extends State<TestPage> {
       child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 24, 5),
         child: Text(
-          'ул. Богомолова, д. 2',
+          'ул. NaN, д. NaN',
           style: GoogleFonts.montserrat(
             color: Colors.black87,
             fontSize: 18,
@@ -518,107 +509,6 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
-
-  /*
-  // виджет карточки заказа
-  Widget buildOrderCard(BuildContext context, QueryDocumentSnapshot doc, String amount, String date, int number, String state, String weight) {
-
-    // проверка на наличие соответствующих прав у пользователя
-    bool isAdministrator = false;
-
-    _authService.isItRightRole(rightRole).then((result) {
-      isAdministrator = result;
-    });
-
-    String amount = doc['amount'];
-    String date = doc['date'];
-    int number = doc['number'];
-    String state = doc['state'];
-    String weight = doc['weight'];
-
-    return InkWell(
-      onTap: () async {
-
-        // вызов метода для проверки соответствия прав пользователя
-        if (isAdministrator) {
-          String documentId = doc.id;
-          print('Document ID: $documentId');
-          print("button pressed");
-        } else {
-          print("Роль не совпадает");
-        }
-
-      },
-
-      child: Padding(
-    //return Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(16, 5, 16, 5),
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: const Color(0xFFE5E7EB),
-              width: 2,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 12),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  flex: 4,
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 12, 0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildRichText(context, number),
-                        Padding(
-                          padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
-                          child: Text(
-                            date,  // дата из БД
-                            style: GoogleFonts.montserrat(
-                              color: const Color(0xFF606A85),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (MediaQuery.of(context).size.width > 650)
-                  Expanded(
-                    flex: 1,
-                    child: _buildContainer('$weight г', const Color(0xFFF1F4F8)),
-                  ),
-                if (MediaQuery.of(context).size.width > 650)
-                  Expanded(
-                    flex: 2,
-                    child: _buildContainer(state, const Color(0x4D9489F5)),
-                  ),
-                Expanded(
-                  flex: 2,
-                  child: _buildColumn(context, amount, state),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-   */
-
-
   // возврат кликабельных карточек заказов
   Widget buildClickableOrderCard(BuildContext context, QueryDocumentSnapshot doc, String amount, String date, int number, String state, String weight) {
     return InkWell(
@@ -641,7 +531,7 @@ class _TestPageState extends State<TestPage> {
     return _buildOrderCard(context, amount, date, number, state, weight);
   }
 
-  // отрисовка карточек заказов
+  // виджет карточек заказов
   Widget _buildOrderCard(BuildContext context, String amount, String date, int number, String state, String weight) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 5, 16, 5),

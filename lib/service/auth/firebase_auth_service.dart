@@ -8,16 +8,6 @@ class FirebaseAuthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late final FirebaseAuthService _authService = FirebaseAuthService();
 
-  late bool isAdministrator;
-
-  // геттер для переменной isAdministrator
-  bool get getIsAdministrator => isAdministrator;
-
-  // сеттер для переменной isAdministrator
-  void setIsAdministrator (bool value) {
-    isAdministrator = value;
-  }
-
   // сохранение нового пользователя в базу пользователей
   Future<User?> signUpEmailPassword(BuildContext context, String email, String password) async {
 
@@ -92,24 +82,6 @@ class FirebaseAuthService {
 
       // попытка входа в аккаунт
       UserCredential credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
-
-
-      // Проверка на принадлежность к администратору
-      bool isAdmin = await checkingForAdministratorPrivileges('administrator');
-
-      setIsAdministrator(isAdmin);
-
-      // В зависимости от результата проверки, выполните нужные действия
-      if (isAdmin) {
-        // Пользователь является администратором, выполните нужные действия
-        print('Пользователь является администратором');
-        // Возможно, перейдите на страницу администратора или выполните другие действия
-      } else {
-        // Пользователь не является администратором, выполните нужные действия
-        print('Пользователь не является администратором');
-        // Возможно, перейдите на обычную страницу пользователя или выполните другие действия
-      }
-
 
       return credential.user;
     }
@@ -195,12 +167,9 @@ class FirebaseAuthService {
 
   // метод для проверки соответствия прав текущего пользователя и необходимых прав для выполнения операции
   Future<bool> isItRightRole(String? rightRole) async {
-    String? role;
 
-    if (_authService.getUserRole(_auth.currentUser!.uid) != null) {
-      role = await _authService.getUserRole(_auth.currentUser!.uid);
-      print(role);
-    }
+    String? role = await _authService.getUserRole(_auth.currentUser!.uid);
+    print(role);
 
     return (role == rightRole);
   }

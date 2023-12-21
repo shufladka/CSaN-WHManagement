@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/',
+      initialRoute: 'sign_in',
       onGenerateRoute: (settings) {
         return MaterialPageRoute(
           builder: (context) {
@@ -53,7 +53,10 @@ class MyApp extends StatelessWidget {
               case 'default_role':
                 return const SetDefaultRolePage();
               default:
-                return const SignInPage();
+                //return const SignInPage();
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
             }
           },
         );

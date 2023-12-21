@@ -1,13 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:csan/service/auth/clear_user_data_service.dart';
-import 'package:csan/service/auth/firebase_auth_service.dart';
 import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LobbyPage extends StatefulWidget {
-  const LobbyPage({Key? key}) : super(key: key);
+  const LobbyPage({super.key});
 
   @override
   _LobbyPageState createState() => _LobbyPageState();
@@ -18,10 +16,6 @@ class _LobbyPageState extends State<LobbyPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final unfocusNode = FocusNode();
-
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  late final FirebaseAuthService _authService = FirebaseAuthService();
 
   String rightRole = 'administrator';
 
