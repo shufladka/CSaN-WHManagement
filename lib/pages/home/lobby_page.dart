@@ -23,6 +23,8 @@ class _LobbyPageState extends State<LobbyPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late final FirebaseAuthService _authService = FirebaseAuthService();
 
+  String rightRole = 'administrator';
+
   @override
   void initState() {
     super.initState();
@@ -92,13 +94,6 @@ class _LobbyPageState extends State<LobbyPage> {
 
   Widget buildFormFields(BuildContext context) {
 
-    // проверка на наличие соответствующих прав у пользователя
-    bool isAdministrator = false;
-
-    _authService.isItRightRole("administrator").then((result) {
-      isAdministrator = result;
-    });
-
     return Column(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -109,9 +104,21 @@ class _LobbyPageState extends State<LobbyPage> {
         buildSubmitButton(context),
         buildTestButton(context),
         //getNewNameToCurrentUserButton(context),
-        //buildAdminPanelPageButton(context),
-        if (isAdministrator)
+
           buildAdminPanelPageButton(context),
+        /*
+        // проверка на принадлежность пользователя к привилегированной группе
+        FutureBuilder<bool>(
+          future: _authService.isItRightRole(rightRole),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting || snapshot.data != true) {
+              return const SizedBox(); // Показываем пустой контейнер, если привилегированная роль не обнаружена
+            }
+            return buildAdminPanelPageButton(context);
+          },
+        ),
+
+         */
       ],
     );
   }

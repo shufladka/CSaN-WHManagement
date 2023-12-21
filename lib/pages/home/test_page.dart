@@ -22,6 +22,8 @@ class _TestPageState extends State<TestPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late final FirebaseAuthService _authService = FirebaseAuthService();
 
+  String rightRole = 'administrator';
+
   // подключение к базе данных Firebase
   void initFirebase() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -43,158 +45,8 @@ class _TestPageState extends State<TestPage> {
     super.dispose();
   }
 
-  /*
   @override
   Widget build(BuildContext context) {
-    return Title(
-      title: 'test',
-      color: Colors.white,
-      child: GestureDetector(
-        onTap: () {
-          if (unfocusNode.canRequestFocus) {
-            FocusScope.of(context).requestFocus(unfocusNode);
-          } else {
-            FocusScope.of(context).unfocus();
-          }
-        },
-        child: Scaffold(
-          key: scaffoldKey,
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            top: true,
-            child: Center(
-              child: Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(
-                  maxWidth: 1170, // Set your desired maximum width
-                ),
-                child: Stack(
-                  children: [
-                    Expanded(
-                      child: Align(
-                        alignment: const AlignmentDirectional(0, -1),
-                        child: Container(
-                          width: double.infinity,
-                          constraints: const BoxConstraints(
-                            maxWidth: 1170,
-                            minWidth: 360,
-                          ),
-                          decoration: const BoxDecoration(),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                buildHeader(context),
-                                buildOrderHeader(context),
-                                customStreamBuilder(context),
-                                emptyTextWidget(),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 10,
-                      child: Center(
-                        child: buildCreateNewOrderButton(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-   */
-  /*
-  @override
-  Widget build(BuildContext context) {
-    return Title(
-      title: 'test',
-      color: Colors.white,
-      child: GestureDetector(
-        onTap: () {
-          if (unfocusNode.canRequestFocus) {
-            FocusScope.of(context).requestFocus(unfocusNode);
-          } else {
-            FocusScope.of(context).unfocus();
-          }
-        },
-        child: Scaffold(
-          key: scaffoldKey,
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            top: true,
-            child: Center(
-              child: Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(
-                  maxWidth: 1170, // Set your desired maximum width
-                ),
-                child: Stack(
-                  children: [
-                    Expanded(
-                      child: Align(
-                        alignment: const AlignmentDirectional(0, -1),
-                        child: Container(
-                          width: double.infinity,
-                          constraints: const BoxConstraints(
-                            maxWidth: 1170,
-                            minWidth: 360,
-                          ),
-                          decoration: const BoxDecoration(),
-                          child: SingleChildScrollView(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                buildHeader(context),
-                                buildOrderHeader(context),
-                                customStreamBuilder(context),
-                                emptyTextWidget(),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 10,
-                        child: Center(
-                          child: buildCreateNewOrderButton(context),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-   */
-
-  @override
-  Widget build(BuildContext context) {
-
-    // проверка на наличие соответствующих прав у пользователя
-    bool isAdministrator = false;
-
-    _authService.isItRightRole("administrator").then((result) {
-      isAdministrator = result;
-    });
 
     return Scaffold(
       key: scaffoldKey,
@@ -215,41 +67,7 @@ class _TestPageState extends State<TestPage> {
               constraints: const BoxConstraints(
                 maxWidth: 1170, // Set your desired maximum width
               ),
-              child: Stack(
-                children: [
-                  Align(
-                    alignment: const AlignmentDirectional(0, -1),
-                    child: Container(
-                      width: double.infinity,
-                      constraints: const BoxConstraints(
-                        maxWidth: 1170,
-                        minWidth: 360,
-                      ),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            buildHeader(context),
-                            buildOrderHeader(context),
-                            customStreamBuilder(context),
-                            emptyTextWidget(),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (isAdministrator)
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 10,
-                      child: Center(
-                        child: buildCreateNewOrderButton(context),
-                      ),
-                    ),
-                ],
-              ),
+              child: checkingCreateNewOrderButton(context, rightRole),
             ),
           ),
         ),
@@ -257,8 +75,96 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
+  // отрисовка страницы заказов
+  FutureBuilder<bool> checkingCreateNewOrderButton(BuildContext context, String rightRole) {
+    return FutureBuilder<bool>(
+      future: _authService.isItRightRole(rightRole),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Показываем анимацию загрузки, если привилегированная роль не обнаружена
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
 
-  // метод для автоматической подгрузки виджетов заказов из базы данных
+        // Проверяем результат и строим виджеты в зависимости от него
+        if (snapshot.data == true) {
+          // Если привилегированная роль обнаружена, показываем полную страницу
+          return buildFullPage(context);
+        } else {
+          // Если привилегированная роль не обнаружена, показываем страницу без кнопки создания нового заказа
+          return buildPageWithoutCreateButton(context);
+        }
+      },
+    );
+  }
+
+  // отрисовка страницы заказов для пользователя с полным доступом
+  Widget buildFullPage(BuildContext context) {
+    return Stack(
+      children: [
+        Align(
+          alignment: const AlignmentDirectional(0, -1),
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(
+              maxWidth: 1170,
+              minWidth: 360,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildHeader(context),
+                  buildOrderHeader(context),
+                  customStreamBuilder(context),
+                  emptyTextWidget(),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 10,
+          child: Center(
+            child: buildCreateNewOrderButton(context),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // отрисовка страницы заказов для пользователя без права доступа к изменению БД
+  Widget buildPageWithoutCreateButton(BuildContext context) {
+    return Align(
+      alignment: const AlignmentDirectional(0, -1),
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(
+          maxWidth: 1170,
+          minWidth: 360,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildHeader(context),
+              buildOrderHeader(context),
+              customStreamBuilder111(context),
+              emptyTextWidget(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /*
+  // метод для автоматической подгрузки виджетов заказов из базы данных с кликабельными полями
   Widget customStreamBuilder(BuildContext context) {
     return StreamBuilder(
       stream: FirebaseFirestore.instance.collection('orders').orderBy('number').snapshots(),
@@ -289,6 +195,88 @@ class _TestPageState extends State<TestPage> {
 
           // Добавляем виджет с данными в список
           orderWidgets.add(buildOrderCard(context, doc, amount, date, number, state, weight));
+        }
+
+        // Возвращаем список виджетов
+        return Column(
+          children: orderWidgets,
+        );
+      },
+    );
+  }
+  */
+
+  // метод для автоматической подгрузки виджетов заказов из базы данных с кликабельными полями
+  Widget customStreamBuilder(BuildContext context) {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance.collection('orders').orderBy('number').snapshots(),
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return emptyTextWidget(); // Показываем текст, если данных нет
+        }
+
+        // Если данные есть, обрабатываем их
+        List<Widget> orderWidgets = [];
+        for (QueryDocumentSnapshot doc in snapshot.data!.docs) {
+          // Получаем данные из документа (парсим)
+          String amount = doc['amount'];
+          String date = doc['date'];
+          int number = doc['number'];
+          String state = doc['state'];
+          String weight = doc['weight'];
+
+          // Добавляем виджет с данными в список
+          orderWidgets.add(buildClickableOrderCard(context, doc, amount, date, number, state, weight));
+        }
+
+        // Возвращаем список виджетов
+        return Column(
+          children: orderWidgets,
+        );
+      },
+    );
+  }
+
+  Widget customStreamBuilder111(BuildContext context) {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance.collection('orders').orderBy('number').snapshots(),
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return emptyTextWidget(); // Показываем текст, если данных нет
+        }
+
+        // Если данные есть, обрабатываем их
+        List<Widget> orderWidgets = [];
+        for (QueryDocumentSnapshot doc in snapshot.data!.docs) {
+          // Получаем данные из документа (парсим)
+          String amount = doc['amount'];
+          String date = doc['date'];
+          int number = doc['number'];
+          String state = doc['state'];
+          String weight = doc['weight'];
+
+          // Добавляем виджет с данными в список
+          orderWidgets.add(buildNonClickableOrderCard(context, doc, amount, date, number, state, weight));
         }
 
         // Возвращаем список виджетов
@@ -531,13 +519,14 @@ class _TestPageState extends State<TestPage> {
   }
 
 
+  /*
   // виджет карточки заказа
   Widget buildOrderCard(BuildContext context, QueryDocumentSnapshot doc, String amount, String date, int number, String state, String weight) {
 
     // проверка на наличие соответствующих прав у пользователя
     bool isAdministrator = false;
 
-    _authService.isItRightRole("administrator").then((result) {
+    _authService.isItRightRole(rightRole).then((result) {
       isAdministrator = result;
     });
 
@@ -549,9 +538,6 @@ class _TestPageState extends State<TestPage> {
 
     return InkWell(
       onTap: () async {
-        // String documentId = doc.id;
-        // print('Document ID: $documentId');
-        // print("button pressed");
 
         // вызов метода для проверки соответствия прав пользователя
         if (isAdministrator) {
@@ -630,6 +616,175 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
+   */
+
+
+  // возврат кликабельных карточек заказов
+  Widget buildClickableOrderCard(BuildContext context, QueryDocumentSnapshot doc, String amount, String date, int number, String state, String weight) {
+    return InkWell(
+      onTap: () async {
+        bool isAdministrator = await _authService.isItRightRole(rightRole);
+        if (isAdministrator) {
+          String documentId = doc.id;
+          print('Document ID: $documentId');
+          print("button pressed");
+        } else {
+          print("Роль не совпадает");
+        }
+      },
+      child: _buildOrderCard(context, amount, date, number, state, weight),
+    );
+  }
+
+  // возврат некликабельных карточек заказов
+  Widget buildNonClickableOrderCard(BuildContext context, QueryDocumentSnapshot doc, String amount, String date, int number, String state, String weight) {
+    return _buildOrderCard(context, amount, date, number, state, weight);
+  }
+
+  // отрисовка карточек заказов
+  Widget _buildOrderCard(BuildContext context, String amount, String date, int number, String state, String weight) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 5, 16, 5),
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: const Color(0xFFE5E7EB),
+            width: 2,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                flex: 4,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 12, 0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildRichText(context, number),
+                      Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
+                        child: Text(
+                          date,  // дата из БД
+                          style: GoogleFonts.montserrat(
+                            color: const Color(0xFF606A85),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (MediaQuery.of(context).size.width > 650)
+                Expanded(
+                  flex: 1,
+                  child: _buildContainer('$weight г', const Color(0xFFF1F4F8)),
+                ),
+              if (MediaQuery.of(context).size.width > 650)
+                Expanded(
+                  flex: 2,
+                  child: _buildContainer(state, const Color(0x4D9489F5)),
+                ),
+              Expanded(
+                flex: 2,
+                child: _buildColumn(context, amount, state),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
+
+
+/*
+  // виджет карточки заказа
+  Widget buildOrderCard(BuildContext context, QueryDocumentSnapshot doc, String amount, String date, int number, String state, String weight) {
+
+    String amount = doc['amount'];
+    String date = doc['date'];
+    int number = doc['number'];
+    String state = doc['state'];
+    String weight = doc['weight'];
+
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 5, 16, 5),
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: const Color(0xFFE5E7EB),
+            width: 2,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                flex: 4,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 12, 0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildRichText(context, number),
+                      Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
+                        child: Text(
+                          date,  // дата из БД
+                          style: GoogleFonts.montserrat(
+                            color: const Color(0xFF606A85),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (MediaQuery.of(context).size.width > 650)
+                Expanded(
+                  flex: 1,
+                  child: _buildContainer('$weight г', const Color(0xFFF1F4F8)),
+                ),
+              if (MediaQuery.of(context).size.width > 650)
+                Expanded(
+                  flex: 2,
+                  child: _buildContainer(state, const Color(0x4D9489F5)),
+                ),
+              Expanded(
+                flex: 2,
+                child: _buildColumn(context, amount, state),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+ */
 
   Widget _buildRichText(BuildContext context, int number) {
     return RichText(

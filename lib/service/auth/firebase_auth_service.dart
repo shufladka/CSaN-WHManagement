@@ -8,6 +8,16 @@ class FirebaseAuthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late final FirebaseAuthService _authService = FirebaseAuthService();
 
+  late bool isAdministrator;
+
+  // геттер для переменной isAdministrator
+  bool get getIsAdministrator => isAdministrator;
+
+  // сеттер для переменной isAdministrator
+  void setIsAdministrator (bool value) {
+    isAdministrator = value;
+  }
+
   // сохранение нового пользователя в базу пользователей
   Future<User?> signUpEmailPassword(BuildContext context, String email, String password) async {
 
@@ -82,6 +92,25 @@ class FirebaseAuthService {
 
       // попытка входа в аккаунт
       UserCredential credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
+
+
+      // Проверка на принадлежность к администратору
+      bool isAdmin = await checkingForAdministratorPrivileges('administrator');
+
+      setIsAdministrator(isAdmin);
+
+      // В зависимости от результата проверки, выполните нужные действия
+      if (isAdmin) {
+        // Пользователь является администратором, выполните нужные действия
+        print('Пользователь является администратором');
+        // Возможно, перейдите на страницу администратора или выполните другие действия
+      } else {
+        // Пользователь не является администратором, выполните нужные действия
+        print('Пользователь не является администратором');
+        // Возможно, перейдите на обычную страницу пользователя или выполните другие действия
+      }
+
+
       return credential.user;
     }
     catch (exc) {
@@ -170,6 +199,7 @@ class FirebaseAuthService {
 
     if (_authService.getUserRole(_auth.currentUser!.uid) != null) {
       role = await _authService.getUserRole(_auth.currentUser!.uid);
+      print(role);
     }
 
     return (role == rightRole);
@@ -242,6 +272,21 @@ class FirebaseAuthService {
       print('Роль успешно обновлена в таблице default_role.');
     } catch (e) {
       print('Ошибка при обновлении роли в таблице default_role: $e');
+    }
+  }
+
+  // проверка на принадлежность пользователя к привилегированной группе "Администратор"
+
+  Future<bool> checkingForAdministratorPrivileges(String rightRole) async {
+    try {
+      // Получение результата проверки
+      bool isAdmin = await _authService.isItRightRole(rightRole);
+
+      return isAdmin;
+    } catch (e) {
+      // Обработка ошибок при проверке привилегий
+      print('Checking privileges error: $e');
+      return false; // Возвращаем false в случае ошибки
     }
   }
 }
