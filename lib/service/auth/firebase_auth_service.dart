@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class FirebaseAuthService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late final FirebaseAuthService _authService = FirebaseAuthService();
 
   // сохранение нового пользователя в базу пользователей
   Future<User?> signUpEmailPassword(BuildContext context, String email, String password) async {
@@ -163,6 +163,18 @@ class FirebaseAuthService {
 
     return null;
   }
+
+  // метод для проверки соответствия прав текущего пользователя и необходимых прав для выполнения операции
+  Future<bool> isItRightRole(String? rightRole) async {
+    String? role;
+
+    if (_authService.getUserRole(_auth.currentUser!.uid) != null) {
+      role = await _authService.getUserRole(_auth.currentUser!.uid);
+    }
+
+    return (role == rightRole);
+  }
+
 
   // получение прав доступа пользователя при сравнении данных в Firebase Firestore и Firebase Auth
   Future<String?> getUserRole(String uid) async {

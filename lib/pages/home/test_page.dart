@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:equatable/equatable.dart';
 
 class TestPage extends StatefulWidget {
   const TestPage({super.key});
@@ -19,7 +20,7 @@ class _TestPageState extends State<TestPage> {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuthService firebaseAuthService = FirebaseAuthService();
+  late final FirebaseAuthService _authService = FirebaseAuthService();
 
   // подключение к базе данных Firebase
   void initFirebase() async {
@@ -113,6 +114,7 @@ class _TestPageState extends State<TestPage> {
   }
 
    */
+  /*
   @override
   Widget build(BuildContext context) {
     return Title(
@@ -164,11 +166,6 @@ class _TestPageState extends State<TestPage> {
                         ),
                       ),
                     ),
-
-                    // добавление новых заказов доступно только администратору
-                    if (firebaseAuthService.getUserRole(_auth.currentUser!.uid) == 'administrator')
-                    // if (FirebaseAuth.instance.currentUser!.displayName == 'administrator')
-                    //if (FirebaseAuth.instance.currentUser!.displayName == 'administrator' || FirebaseAuth.instance.currentUser!.displayName == 'user')
                       Positioned(
                         left: 0,
                         right: 0,
@@ -179,6 +176,79 @@ class _TestPageState extends State<TestPage> {
                       ),
                   ],
                 ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+   */
+
+  @override
+  Widget build(BuildContext context) {
+
+    // проверка на наличие соответствующих прав у пользователя
+    bool isAdministrator = false;
+
+    _authService.isItRightRole("administrator").then((result) {
+      isAdministrator = result;
+    });
+
+    return Scaffold(
+      key: scaffoldKey,
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        top: true,
+        child: GestureDetector(
+          onTap: () {
+            if (unfocusNode.canRequestFocus) {
+              FocusScope.of(context).requestFocus(unfocusNode);
+            } else {
+              FocusScope.of(context).unfocus();
+            }
+          },
+          child: Center(
+            child: Container(
+              width: double.infinity,
+              constraints: const BoxConstraints(
+                maxWidth: 1170, // Set your desired maximum width
+              ),
+              child: Stack(
+                children: [
+                  Align(
+                    alignment: const AlignmentDirectional(0, -1),
+                    child: Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(
+                        maxWidth: 1170,
+                        minWidth: 360,
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            buildHeader(context),
+                            buildOrderHeader(context),
+                            customStreamBuilder(context),
+                            emptyTextWidget(),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (isAdministrator)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 10,
+                      child: Center(
+                        child: buildCreateNewOrderButton(context),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -464,6 +534,13 @@ class _TestPageState extends State<TestPage> {
   // виджет карточки заказа
   Widget buildOrderCard(BuildContext context, QueryDocumentSnapshot doc, String amount, String date, int number, String state, String weight) {
 
+    // проверка на наличие соответствующих прав у пользователя
+    bool isAdministrator = false;
+
+    _authService.isItRightRole("administrator").then((result) {
+      isAdministrator = result;
+    });
+
     String amount = doc['amount'];
     String date = doc['date'];
     int number = doc['number'];
@@ -471,26 +548,21 @@ class _TestPageState extends State<TestPage> {
     String weight = doc['weight'];
 
     return InkWell(
-      onTap: () {
-        // обработка нажатия на виджет заказа
-        /*
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return const EditOrderDialog();
-          },
-        );
+      onTap: () async {
+        // String documentId = doc.id;
+        // print('Document ID: $documentId');
+        // print("button pressed");
 
-         */
-        // обработка нажатия доступна только привилегированным пользователям
-        if (firebaseAuthService.getUserRole(_auth.currentUser!.uid) == 'administrator') {
+        // вызов метода для проверки соответствия прав пользователя
+        if (isAdministrator) {
           String documentId = doc.id;
           print('Document ID: $documentId');
+          print("button pressed");
+        } else {
+          print("Роль не совпадает");
         }
-        //print("button pressed");
+
       },
-
-
 
       child: Padding(
     //return Padding(

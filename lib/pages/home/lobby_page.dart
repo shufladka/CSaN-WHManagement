@@ -21,7 +21,7 @@ class _LobbyPageState extends State<LobbyPage> {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuthService firebaseAuthService = FirebaseAuthService();
+  late final FirebaseAuthService _authService = FirebaseAuthService();
 
   @override
   void initState() {
@@ -91,6 +91,14 @@ class _LobbyPageState extends State<LobbyPage> {
   }
 
   Widget buildFormFields(BuildContext context) {
+
+    // проверка на наличие соответствующих прав у пользователя
+    bool isAdministrator = false;
+
+    _authService.isItRightRole("administrator").then((result) {
+      isAdministrator = result;
+    });
+
     return Column(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -101,8 +109,8 @@ class _LobbyPageState extends State<LobbyPage> {
         buildSubmitButton(context),
         buildTestButton(context),
         //getNewNameToCurrentUserButton(context),
-
-        if (firebaseAuthService.getUserRole(_auth.currentUser!.uid) == 'administrator')
+        //buildAdminPanelPageButton(context),
+        if (isAdministrator)
           buildAdminPanelPageButton(context),
       ],
     );
