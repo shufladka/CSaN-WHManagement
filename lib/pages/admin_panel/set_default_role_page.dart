@@ -1,8 +1,6 @@
-
 import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../../service/auth/firebase_auth_service.dart';
 
 // класс для создания страницы для установления стандартной роли для всех новых пользователей
@@ -23,7 +21,15 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
   final unfocusNode = FocusNode();
 
   final FirebaseAuthService _auth = FirebaseAuthService();
+  String currentDefaultRole = '';
 
+  // подгрузка текущей роли для новых пользователей
+  Future<void> _loadDefaultRole() async {
+    String? result = await _auth.getDefaultRole();
+    setState(() {
+      currentDefaultRole = result!;
+    });
+  }
 
   // обновление роли в таблице default_role и возврат на страницу панели администратора
   void _setDefaultRole() async {
@@ -37,6 +43,8 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
   @override
   void initState() {
     super.initState();
+
+    _loadDefaultRole();
 
     roleController ??= TextEditingController();
     roleFocusNode ??= FocusNode();
@@ -188,7 +196,7 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
 
   InputDecoration buildDefaultRoleFieldInputDecoration(BuildContext context) {
     return InputDecoration(
-      hintText: 'роль по умолчанию',
+      hintText: 'роль по умолчанию: $currentDefaultRole',
       hintStyle: GoogleFonts.montserrat(
         color: const Color(0x6222282F),
         fontWeight: FontWeight.w600,
@@ -239,15 +247,6 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
       buttonText: 'ВЕРНУТЬСЯ В ПАНЕЛЬ АДМИНИСТРАТОРА',
       onPressed: () {
         Navigator.pushReplacementNamed(context, "admin_panel");
-      },
-    );
-  }
-
-  Widget getDisplayCurrentUserNameButton(BuildContext context) {
-    return BuildButtonWidget(
-      buttonText: 'ПРАВА ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ',
-      onPressed: () {
-        print(FirebaseAuth.instance.currentUser!.displayName);
       },
     );
   }

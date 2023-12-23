@@ -217,11 +217,11 @@ class FirebaseAuthService {
   // получение роли пользователя по умолчанию из таблицы default_role
   Future<String?> getDefaultRole() async {
     try {
-      DocumentSnapshot defaultRoleDoc = await _firestore.collection('default_role').doc('0epnU1hXUOjTKgjmTsQh').get();
+      DocumentSnapshot defaultRoleDoc = await _firestore.collection('technical_information').doc('default_role').get();
 
       if (defaultRoleDoc.exists) {
-        // роль хранится в поле 'role'
-        return defaultRoleDoc['role'];
+        // роль хранится в поле 'default_role'
+        return defaultRoleDoc['default_role'];
       } else {
         print('Документ с ролями не найден.');
         return null;

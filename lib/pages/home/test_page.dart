@@ -404,7 +404,7 @@ class _TestPageState extends State<TestPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                flex: 4,
+                flex: 8,
                 child: Text(
                   'Номер заказа',
                   style: GoogleFonts.montserrat(
@@ -416,7 +416,7 @@ class _TestPageState extends State<TestPage> {
               ),
               if (screenWidth > 650) // ограничение по минимальной ширине
                 Expanded(
-                  flex: 1,
+                  flex: 2,
                   child: Text(
                     'Вес',
                     style: GoogleFonts.montserrat(
@@ -428,7 +428,7 @@ class _TestPageState extends State<TestPage> {
                 ),
               if (screenWidth > 650) // ограничение по минимальной ширине
                 Expanded(
-                  flex: 2,
+                  flex: 4,
                   child: Text(
                     'Статус заказа',
                     style: GoogleFonts.montserrat(
@@ -439,7 +439,7 @@ class _TestPageState extends State<TestPage> {
                   ),
                 ),
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: Text(
                   'Стоимость',
                   textAlign: TextAlign.end,
