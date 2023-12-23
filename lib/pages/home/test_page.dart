@@ -484,7 +484,7 @@ class _TestPageState extends State<TestPage> {
         showDialog(
           context: context,
           builder: (BuildContext context) {
-            return EditOrderDialog(docID: doc.id);
+            return EditOrderDialog(docID: doc.id, docNumber: number);
           },
         );
       },

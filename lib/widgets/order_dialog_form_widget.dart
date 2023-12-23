@@ -147,15 +147,30 @@ class _CreateOrderDialogState extends State<CreateOrderDialog> {
         ElevatedButton(
           onPressed: () async {
 
+            /*
             // Получаем текущее количество записей
             QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('orders').get();
             int currentOrderNumber = snapshot.size + 1;
+
+             */
+
+            // Получаем текущее количество заказов из документа number_of_orders коллекции technical_information
+            DocumentSnapshot techInfoSnapshot = await FirebaseFirestore.instance.collection('technical_information').doc('number_of_orders').get();
+            int currentOrderNumber = techInfoSnapshot['number_of_orders'];
+
+            // Увеличиваем количество заказов на 1
+            currentOrderNumber++;
+
+            // Обновляем количество заказов в документе number_of_orders коллекции technical_information
+            await FirebaseFirestore.instance.collection('technical_information').doc('number_of_orders').update({
+              'number_of_orders': currentOrderNumber,
+            });
 
             String df = DateFormat('dd.MM.yyyy | HH:mm:ss').format(DateTime.now());
             print('Order: $currentOrderNumber');
             print('Date: $df');
             print('State: $state');
-            print('amount: $amount');
+            print('Amount: $amount');
             print('Weight: $weight');
 
             await FirebaseFirestore.instance.collection('orders').add({
@@ -189,8 +204,9 @@ class _CreateOrderDialogState extends State<CreateOrderDialog> {
 // класс для редактирования состояния заказа
 class EditOrderDialog extends StatefulWidget {
   final String docID;
+  final int docNumber;
 
-  const EditOrderDialog({required this.docID, super.key});
+  const EditOrderDialog({required this.docID, required this.docNumber, super.key});
 
   @override
   _EditOrderDialogState createState() => _EditOrderDialogState();
@@ -214,7 +230,7 @@ class _EditOrderDialogState extends State<EditOrderDialog> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildEditOrderHeader(context),
+                buildEditOrderHeader(context, widget.docNumber),
                 buildSetOrderStateField(context),
                 buildSetCostsField(context),
                 buildSetWeightField(context),
@@ -229,11 +245,11 @@ class _EditOrderDialogState extends State<EditOrderDialog> {
   }
 
   // виджет для указания заголовка всплывающей формы (создание нового заказа)
-  Widget buildEditOrderHeader(BuildContext context) {
+  Widget buildEditOrderHeader(BuildContext context, int docNumber) {
     return Column(
       children: [
         Text(
-          'Редактирование заказа',
+          'Редактирование заказа №$docNumber',
           style: GoogleFonts.montserrat(
             color: Colors.black87,
             fontSize: 18,
@@ -390,8 +406,9 @@ class _EditOrderDialogState extends State<EditOrderDialog> {
 // класс только для редактирования состояния заказа
 class EditOrderStateDialog extends StatefulWidget {
   final String docID;
+  final int docNumber;
 
-  const EditOrderStateDialog({required this.docID, super.key});
+  const EditOrderStateDialog({required this.docID, required this.docNumber, super.key});
 
   @override
   _EditOrderStateDialogState createState() => _EditOrderStateDialogState();
@@ -413,7 +430,7 @@ class _EditOrderStateDialogState extends State<EditOrderStateDialog> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildEditOrderHeader(context),
+                buildEditOrderHeader(context, widget.docNumber),
                 buildSetOrderStateField(context),
                 buildSubmitButton(context, widget.docID),
               ],
@@ -425,11 +442,11 @@ class _EditOrderStateDialogState extends State<EditOrderStateDialog> {
   }
 
   // виджет для указания заголовка всплывающей формы (создание нового заказа)
-  Widget buildEditOrderHeader(BuildContext context) {
+  Widget buildEditOrderHeader(BuildContext context, int docNumber) {
     return Column(
       children: [
         Text(
-          'Редактирование состояния заказа',
+          'Редактирование состояния заказа №$docNumber',
           style: GoogleFonts.montserrat(
             color: Colors.black87,
             fontSize: 18,

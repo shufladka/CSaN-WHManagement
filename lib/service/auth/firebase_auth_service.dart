@@ -235,8 +235,8 @@ class FirebaseAuthService {
   // Установка роли пользователя в таблице default_role
   Future<void> setDefaultRole(String role) async {
     try {
-      await _firestore.collection('default_role').doc('0epnU1hXUOjTKgjmTsQh').update({
-        'role': role,
+      await _firestore.collection('technical_information').doc('default_role').update({
+        'default_role': role,
       });
       print('Роль успешно обновлена в таблице default_role.');
     } catch (e) {

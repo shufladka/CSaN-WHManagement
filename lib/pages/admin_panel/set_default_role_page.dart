@@ -247,7 +247,6 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
     return BuildButtonWidget(
       buttonText: 'ПРАВА ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ',
       onPressed: () {
-        //Navigator.pushReplacementNamed(context, "test");
         print(FirebaseAuth.instance.currentUser!.displayName);
       },
     );
