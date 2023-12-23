@@ -53,10 +53,7 @@ class MyApp extends StatelessWidget {
               case 'default_role':
                 return const SetDefaultRolePage();
               default:
-                //return const SignInPage();
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
+                return const SignInPage();
             }
           },
         );

@@ -1,5 +1,5 @@
 import 'package:csan/service/auth/firebase_auth_service.dart';
-import 'package:csan/widgets/edit_order_dialog.dart';
+import 'package:csan/widgets/order_dialog_form_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -55,7 +55,7 @@ class _TestPageState extends State<TestPage> {
               constraints: const BoxConstraints(
                 maxWidth: 1170, // Set your desired maximum width
               ),
-              child: checkingForPrivilegRole(context, rightRole),
+              child: checkingForPrivilegedRole(context, rightRole),
             ),
           ),
         ),
@@ -64,7 +64,7 @@ class _TestPageState extends State<TestPage> {
   }
 
   // отрисовка страницы заказов осуществляется на основе прав пользователей
-  FutureBuilder<bool> checkingForPrivilegRole(BuildContext context, String rightRole) {
+  FutureBuilder<bool> checkingForPrivilegedRole(BuildContext context, String rightRole) {
     return FutureBuilder<bool>(
       future: _authService.isItRightRole(rightRole),
       builder: (context, snapshot) {
@@ -154,49 +154,6 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
-  /*
-  // метод для автоматической подгрузки виджетов заказов из базы данных с кликабельными полями
-  Widget customStreamBuilder(BuildContext context) {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('orders').orderBy('number').snapshots(),
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        }
-
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return emptyTextWidget(); // Показываем текст, если данных нет
-        }
-
-        // Если данные есть, обрабатываем их
-        List<Widget> orderWidgets = [];
-        for (QueryDocumentSnapshot doc in snapshot.data!.docs) {
-          // Получаем данные из документа (парсим)
-          String amount = doc['amount'];
-          String date = doc['date'];
-          int number = doc['number'];
-          String state = doc['state'];
-          String weight = doc['weight'];
-
-          // Добавляем виджет с данными в список
-          orderWidgets.add(buildOrderCard(context, doc, amount, date, number, state, weight));
-        }
-
-        // Возвращаем список виджетов
-        return Column(
-          children: orderWidgets,
-        );
-      },
-    );
-  }
-  */
-
   // метод для автоматической подгрузки виджетов заказов из базы данных с кликабельными полями
   Widget customStreamBuilder(BuildContext context) {
     return StreamBuilder(
@@ -267,7 +224,7 @@ class _TestPageState extends State<TestPage> {
           String weight = doc['weight'];
 
           // Добавляем виджет с данными в список
-          orderWidgets.add(buildNonClickableOrderCard(context, doc, amount, date, number, state, weight));
+          orderWidgets.add(buildNonClickableOrderCard(context, amount, date, number, state, weight));
         }
 
         // Возвращаем список виджетов
@@ -316,7 +273,7 @@ class _TestPageState extends State<TestPage> {
             showDialog(
               context: context,
               builder: (BuildContext context) {
-                return const EditOrderDialog();
+                return const CreateOrderDialog();
               },
             );
           },
@@ -514,6 +471,7 @@ class _TestPageState extends State<TestPage> {
     return InkWell(
       onTap: () async {
         bool isAdministrator = await _authService.isItRightRole(rightRole);
+
         if (isAdministrator) {
           String documentId = doc.id;
           print('Document ID: $documentId');
@@ -521,13 +479,21 @@ class _TestPageState extends State<TestPage> {
         } else {
           print("Роль не совпадает");
         }
+
+        // переделать на редактирование
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return EditOrderDialog(docID: doc.id);
+          },
+        );
       },
       child: _buildOrderCard(context, amount, date, number, state, weight),
     );
   }
 
   // возврат некликабельных карточек заказов
-  Widget buildNonClickableOrderCard(BuildContext context, QueryDocumentSnapshot doc, String amount, String date, int number, String state, String weight) {
+  Widget buildNonClickableOrderCard(BuildContext context, String amount, String date, int number, String state, String weight) {
     return _buildOrderCard(context, amount, date, number, state, weight);
   }
 

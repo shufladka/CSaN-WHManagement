@@ -407,7 +407,7 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   Widget buildForgotPasswordButton(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Center(
         child: Padding(
@@ -418,7 +418,7 @@ class _SignInPageState extends State<SignInPage> {
               // Navigator.of(context).pushNamed('lobby');
             },
             child: Container(
-              color: Colors.white, // Белый фон
+              color: Colors.white, // белый фон
               //padding: EdgeInsets.all(12),
               child: Text(
                 'забыли пароль?',
