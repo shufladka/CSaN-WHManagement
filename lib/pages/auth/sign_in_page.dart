@@ -49,7 +49,7 @@ class _SignInPageState extends State<SignInPage> {
     User? user = await _auth.signInEmailPassword(context, email, password);
 
     if (user != null) {
-      print('user is successfully created.');
+      print('user successfully signed in.');
       _saveData(); // Добавлен вызов _saveData
       Navigator.pushReplacementNamed(context, "lobby");
     } else {

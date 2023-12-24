@@ -14,20 +14,11 @@ class LobbyPage extends StatefulWidget {
 class _LobbyPageState extends State<LobbyPage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-
-  final unfocusNode = FocusNode();
-
-  String rightRole = 'administrator';
+  String adminRole = 'administrator';
 
   @override
   void initState() {
     super.initState();
-
-    unfocusNode.addListener(() {
-      if (unfocusNode.hasFocus) {
-        unfocusNode.unfocus();
-      }
-    });
   }
 
   // Метод для вызова удаления сохраненных данных
@@ -45,7 +36,6 @@ class _LobbyPageState extends State<LobbyPage> {
   @override
   void dispose() {
     super.dispose();
-    unfocusNode.dispose();
   }
 
   @override
@@ -53,18 +43,13 @@ class _LobbyPageState extends State<LobbyPage> {
     return Title(
       title: 'Лобби',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
-      child: GestureDetector(
-        onTap: () => unfocusNode.canRequestFocus
-            ? FocusScope.of(context).requestFocus(unfocusNode)
-            : FocusScope.of(context).unfocus(),
-        child: Scaffold(
-          key: scaffoldKey,
-          backgroundColor: Colors.white,
-          body: Align(
-            alignment: const AlignmentDirectional(0.00, 0.00),
-            child: SingleChildScrollView(
-              child: buildSignInForm(context),
-            ),
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: Colors.white,
+        body: Align(
+          alignment: const AlignmentDirectional(0.00, 0.00),
+          child: SingleChildScrollView(
+            child: buildSignInForm(context),
           ),
         ),
       ),
@@ -96,14 +81,15 @@ class _LobbyPageState extends State<LobbyPage> {
         buildTitle(context),
         buildClearUserDataButton(context),
         buildSubmitButton(context),
-        buildTestButton(context),
-        //getNewNameToCurrentUserButton(context),
+        buildOrdersPageButton(context),
 
-          buildAdminPanelPageButton(context),
+        buildAdminPanelPageButton(context),
+
+        buildLobbyTestPageButton(context),
         /*
         // проверка на принадлежность пользователя к привилегированной группе
         FutureBuilder<bool>(
-          future: _authService.isItRightRole(rightRole),
+          future: _authService.isItadminRole(adminRole),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting || snapshot.data != true) {
               return const SizedBox(); // Показываем пустой контейнер, если привилегированная роль не обнаружена
@@ -177,11 +163,11 @@ class _LobbyPageState extends State<LobbyPage> {
     );
   }
 
-  Widget buildTestButton(BuildContext context) {
+  Widget buildOrdersPageButton(BuildContext context) {
     return BuildButtonWidget(
       buttonText: 'ПЕРЕЙТИ В МЕНЮ ЗАКАЗОВ',
       onPressed: () {
-        Navigator.pushReplacementNamed(context, "test");
+        Navigator.pushReplacementNamed(context, "orders");
       },
     );
   }
@@ -197,34 +183,12 @@ class _LobbyPageState extends State<LobbyPage> {
     );
   }
 
-  /*
-  Widget getNewNameToCurrentUserButton(BuildContext context) {
+  Widget buildLobbyTestPageButton(BuildContext context) {
     return BuildButtonWidget(
-      buttonText: 'ДАТЬ ПРАВА АДМИНИСТРАТОРА',
+      buttonText: 'ТЕСТОВАЯ СТРАНИЦА',
       onPressed: () {
-        //Navigator.pushReplacementNamed(context, "test");
-        setDisplayName('administrator');
+        Navigator.pushReplacementNamed(context, "test");
       },
     );
   }
-
-  void setDisplayName(String displayName) async {
-    try {
-      // Получаем текущего пользователя
-      User? user = FirebaseAuth.instance.currentUser;
-
-      // Обновляем профиль пользователя с новым displayName
-      await user?.updateProfile(displayName: displayName);
-
-      // Обновляем информацию о пользователе в Firestore или другом месте, где хранятся данные пользователя
-
-      // Печатаем успешное сообщение
-      print('displayName успешно обновлен: $displayName');
-    } catch (e) {
-      // Обработка ошибок при установке displayName
-      print('Ошибка при обновлении displayName: $e');
-    }
-  }
-
-   */
 }

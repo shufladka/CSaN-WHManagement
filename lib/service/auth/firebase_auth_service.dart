@@ -245,7 +245,6 @@ class FirebaseAuthService {
   }
 
   // проверка на принадлежность пользователя к привилегированной группе "Администратор"
-
   Future<bool> checkingForAdministratorPrivileges(String rightRole) async {
     try {
       // Получение результата проверки
@@ -256,6 +255,16 @@ class FirebaseAuthService {
       // Обработка ошибок при проверке привилегий
       print('Checking privileges error: $e');
       return false; // Возвращаем false в случае ошибки
+    }
+  }
+
+  Future<String> getCurrentUserEmail() async {
+    User? user = _auth.currentUser;
+
+    if (user != null) {
+      return user.email ?? ''; // Возвращает email пользователя, если он есть
+    } else {
+      return ''; // Возвращаем пустую строку, если пользователь не вошел в систему
     }
   }
 }

@@ -5,19 +5,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-class TestPage extends StatefulWidget {
-  const TestPage({super.key});
+class OrdersPage extends StatefulWidget {
+  const OrdersPage({super.key});
 
   @override
-  _TestPageState createState() => _TestPageState();
+  _OrdersPageState createState() => _OrdersPageState();
 }
 
-class _TestPageState extends State<TestPage> {
+class _OrdersPageState extends State<OrdersPage> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   late final FirebaseAuthService _authService = FirebaseAuthService();
 
-  String rightRole = 'administrator';
+  String adminRole = 'administrator';
 
   // подключение к базе данных Firebase
   void initFirebase() async {
@@ -42,7 +42,7 @@ class _TestPageState extends State<TestPage> {
   @override
   Widget build(BuildContext context) {
     return Title(
-      title: 'тест',
+      title: 'Список заказов',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
       child: Scaffold(
         key: scaffoldKey,
@@ -55,7 +55,7 @@ class _TestPageState extends State<TestPage> {
               constraints: const BoxConstraints(
                 maxWidth: 1170, // Set your desired maximum width
               ),
-              child: checkingForPrivilegedRole(context, rightRole),
+              child: checkingForPrivilegedRole(context, adminRole),
             ),
           ),
         ),
@@ -64,9 +64,9 @@ class _TestPageState extends State<TestPage> {
   }
 
   // отрисовка страницы заказов осуществляется на основе прав пользователей
-  FutureBuilder<bool> checkingForPrivilegedRole(BuildContext context, String rightRole) {
+  FutureBuilder<bool> checkingForPrivilegedRole(BuildContext context, String adminRole) {
     return FutureBuilder<bool>(
-      future: _authService.isItRightRole(rightRole),
+      future: _authService.isItRightRole(adminRole),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
 
@@ -235,7 +235,7 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
-  Widget buildFirstButton(BuildContext context) {
+  Widget buildReturnButton(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0, 0),
       child: Padding(
@@ -247,13 +247,18 @@ class _TestPageState extends State<TestPage> {
             Navigator.pushReplacementNamed(context, "lobby");
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.red[700],
             elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8), // устанавливаем радиус закругления
+            ),
           ),
           child: Text(
-            'Назад',
-            style: GoogleFonts.outfit(
+            'НАЗАД',
+            style: GoogleFonts.montserrat(
               color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
@@ -305,7 +310,7 @@ class _TestPageState extends State<TestPage> {
       child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(0, 20, 24, 0),
         child: Text(
-          'Пункт №NaN',
+          'Пункт №42',
           style: GoogleFonts.montserrat(
             color: Colors.black87,
             fontSize: 28,
@@ -322,7 +327,7 @@ class _TestPageState extends State<TestPage> {
       child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 24, 0),
         child: Text(
-          'г. NaN',
+          'г. Солигорск',
           style: GoogleFonts.montserrat(
             color: Colors.black87,
             fontSize: 18,
@@ -339,7 +344,7 @@ class _TestPageState extends State<TestPage> {
       child: Padding(
         padding: const EdgeInsetsDirectional.fromSTEB(0, 5, 24, 5),
         child: Text(
-          'ул. NaN, д. NaN',
+          'ул. Богомолова, д. 2',
           style: GoogleFonts.montserrat(
             color: Colors.black87,
             fontSize: 18,
@@ -358,7 +363,7 @@ class _TestPageState extends State<TestPage> {
         Column(
           mainAxisSize: MainAxisSize.max,
           children: [
-            buildFirstButton(context),
+            buildReturnButton(context),
           ],
         ),
         Expanded(
@@ -470,7 +475,7 @@ class _TestPageState extends State<TestPage> {
   Widget buildClickableOrderCard(BuildContext context, QueryDocumentSnapshot doc, String amount, String date, int number, String state, String weight) {
     return InkWell(
       onTap: () async {
-        bool isAdministrator = await _authService.isItRightRole(rightRole);
+        bool isAdministrator = await _authService.isItRightRole(adminRole);
 
         if (isAdministrator) {
           String documentId = doc.id;
@@ -562,85 +567,6 @@ class _TestPageState extends State<TestPage> {
       ),
     );
   }
-
-
-
-
-/*
-  // виджет карточки заказа
-  Widget buildOrderCard(BuildContext context, QueryDocumentSnapshot doc, String amount, String date, int number, String state, String weight) {
-
-    String amount = doc['amount'];
-    String date = doc['date'];
-    int number = doc['number'];
-    String state = doc['state'];
-    String weight = doc['weight'];
-
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 5, 16, 5),
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: const Color(0xFFE5E7EB),
-            width: 2,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                flex: 4,
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 12, 0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildRichText(context, number),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
-                        child: Text(
-                          date,  // дата из БД
-                          style: GoogleFonts.montserrat(
-                            color: const Color(0xFF606A85),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (MediaQuery.of(context).size.width > 650)
-                Expanded(
-                  flex: 1,
-                  child: _buildContainer('$weight г', const Color(0xFFF1F4F8)),
-                ),
-              if (MediaQuery.of(context).size.width > 650)
-                Expanded(
-                  flex: 2,
-                  child: _buildContainer(state, const Color(0x4D9489F5)),
-                ),
-              Expanded(
-                flex: 2,
-                child: _buildColumn(context, amount, state),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
- */
 
   Widget _buildRichText(BuildContext context, int number) {
     return RichText(
