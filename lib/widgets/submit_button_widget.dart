@@ -21,8 +21,9 @@ class BuildButtonWidget extends StatelessWidget {
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.black87,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero,
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8), // устанавливаем радиус закругления
             ),
           ),
           child: Text(
@@ -59,8 +60,9 @@ class BuildExitButtonWidget extends StatelessWidget {
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.red[400],
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero,
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8), // устанавливаем радиус закругления
             ),
           ),
           child: Text(

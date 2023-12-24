@@ -415,7 +415,7 @@ class _SignInPageState extends State<SignInPage> {
           child: InkWell(
             onTap: () {
               Navigator.of(context).pushNamed('pass_reset');
-              // Navigator.of(context).pushNamed('lobby');
+              // Navigator.of(context).pushNamed('menu');
             },
             child: Container(
               color: Colors.white, // белый фон

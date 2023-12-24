@@ -23,7 +23,7 @@ class _CreateOrderDialogState extends State<CreateOrderDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       content: SizedBox(
-        height: 260,
+        height: 280,
         width: 400,
         child: SingleChildScrollView(
           child: Padding(
@@ -32,7 +32,6 @@ class _CreateOrderDialogState extends State<CreateOrderDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 buildCreateNewOrderHeader(context),
-                // buildSetOrderStateField(context),
                 buildSetCostsField(context),
                 buildSetWeightField(context),
                 buildSubmitButton(context),
@@ -55,37 +54,6 @@ class _CreateOrderDialogState extends State<CreateOrderDialog> {
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
-        ),
-      ],
-    );
-  }
-
-  // виджет редактирования состояния заказа
-  Widget buildSetOrderStateField(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: 16),
-        DropdownButton<String>(
-          value: state,
-          onChanged: (value) {
-            setState(() {
-              state = value!;
-            });
-          },
-          items: ['В обработке', 'Собран', 'Отправлен', 'В пункте выдачи', 'Доставлен', 'Отменен']
-              .map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(
-                value,
-                style: GoogleFonts.montserrat(
-                  color: Colors.black87,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            );
-          }).toList(),
         ),
       ],
     );
