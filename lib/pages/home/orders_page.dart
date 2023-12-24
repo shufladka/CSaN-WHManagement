@@ -18,6 +18,7 @@ class _OrdersPageState extends State<OrdersPage> {
   late final FirebaseAuthService _authService = FirebaseAuthService();
 
   String adminRole = 'administrator';
+  String salespersonRole = 'salesperson';
 
   // подключение к базе данных Firebase
   void initFirebase() async {
@@ -55,7 +56,7 @@ class _OrdersPageState extends State<OrdersPage> {
               constraints: const BoxConstraints(
                 maxWidth: 1170, // Set your desired maximum width
               ),
-              child: checkingForPrivilegedRole(context, adminRole),
+              child: checkingForPrivilegedRole(context),
             ),
           ),
         ),
@@ -63,28 +64,44 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
-  // отрисовка страницы заказов осуществляется на основе прав пользователей
-  FutureBuilder<bool> checkingForPrivilegedRole(BuildContext context, String adminRole) {
+  // отрисовка страницы заказов осуществляется на основе прав пользователей (admin)
+  FutureBuilder<bool> checkingForPrivilegedRole(BuildContext context) {
     return FutureBuilder<bool>(
-      future: _authService.isItRightRole(adminRole),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-
-          // показываем анимацию загрузки, если привилегированная роль не обнаружена
+      future: _authService.isItRightRole(adminRole), // Проверка adminRole
+      builder: (context, adminSnapshot) {
+        if (adminSnapshot.connectionState == ConnectionState.waiting) {
+          // Показываем анимацию загрузки, если привилегированная роль не обнаружена
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        // проверяем результат и строим виджеты в зависимости от него
-        if (snapshot.data == true) {
-
-          // если привилегированная роль обнаружена, показываем полную страницу
+        // Проверяем результат и строим виджеты в зависимости от него
+        if (adminSnapshot.data == true) {
+          // Если привилегированная роль adminRole обнаружена, показываем полную страницу
           return buildFullPage(context);
         } else {
+          // Если привилегированная роль adminRole не обнаружена, проверяем salespersonRole
+          return FutureBuilder<bool>(
+            future: _authService.isItRightRole(salespersonRole),
+            builder: (context, salespersonSnapshot) {
+              if (salespersonSnapshot.connectionState == ConnectionState.waiting) {
+                // Показываем анимацию загрузки, если привилегированная роль не обнаружена
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
 
-          // если привилегированная роль не обнаружена, показываем страницу без кнопки создания нового заказа
-          return buildPageWithoutCreateButton(context);
+              // Проверяем результат и строим виджеты в зависимости от него
+              if (salespersonSnapshot.data == true) {
+                // Если привилегированная роль salespersonRole обнаружена, показываем страницу без кнопки создания нового заказа
+                return buildPageWithoutCreateButton(context);
+              } else {
+                // Если ни adminRole, ни salespersonRole не обнаружены, показываем страницу с просьбой обратиться к администратору
+                return buildPageWithoutAnything(context);
+              }
+            },
+          );
         }
       },
     );
@@ -128,7 +145,7 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
-  // отрисовка страницы заказов для пользователя без права доступа к изменению БД
+  // отрисовка страницы заказов для пользователя группы "Продавец"
   Widget buildPageWithoutCreateButton(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0, -1),
@@ -145,8 +162,70 @@ class _OrdersPageState extends State<OrdersPage> {
             children: [
               buildHeader(context),
               buildOrderHeader(context),
-              customStreamBuilder111(context),
+              customStreamBuilder(context),
               emptyTextWidget(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // отрисовка страницы заказов для пользователя без доступа к базе данных
+  Widget buildPageWithoutAnything(BuildContext context) {
+    return Align(
+      alignment: const AlignmentDirectional(0, -1),
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(
+          maxWidth: 1170,
+          minWidth: 360,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildHeader(context),
+              buildErrorWithOrdersPageButton(context),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // отрисовка списка заказов для пользователя без доступа к базе данных
+  Widget buildErrorWithOrdersPageButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 5, 16, 5),
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: const Color(0xFFE5E7EB),
+            width: 2,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
+                child: Text(
+                  "ДАННЫЕ НЕДОСТУПНЫ. ОБРАТИТЕСЬ К АДМИНИСТРАТОРУ",
+                  style: GoogleFonts.montserrat(
+                    color: const Color(0xFF161718),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -195,46 +274,7 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
-  Widget customStreamBuilder111(BuildContext context) {
-    return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('orders').orderBy('number').snapshots(),
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        }
-
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return emptyTextWidget(); // Показываем текст, если данных нет
-        }
-
-        // Если данные есть, обрабатываем их
-        List<Widget> orderWidgets = [];
-        for (QueryDocumentSnapshot doc in snapshot.data!.docs) {
-          // Получаем данные из документа (парсим)
-          String amount = doc['amount'];
-          String date = doc['date'];
-          int number = doc['number'];
-          String state = doc['state'];
-          String weight = doc['weight'];
-
-          // Добавляем виджет с данными в список
-          orderWidgets.add(buildNonClickableOrderCard(context, amount, date, number, state, weight));
-        }
-
-        // Возвращаем список виджетов
-        return Column(
-          children: orderWidgets,
-        );
-      },
-    );
-  }
-
+  // виджет для отрисовки кнопки возврата в меню
   Widget buildReturnButton(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0, 0),
@@ -303,7 +343,7 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
-
+  // виджет для отрисовки текста "номер пункта выдачи"
   Widget buildWarehouseNameText(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(1, 0),
@@ -321,6 +361,7 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
+  // виджет для отрисовки текста "город"
   Widget buildCityNameText(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(1, 0),
@@ -338,6 +379,7 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
+  // виджет для отрисовки текста "улица/дом"
   Widget buildStreetNameText(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(1, 0),
@@ -471,39 +513,48 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
-  // возврат кликабельных карточек заказов
+  // возврат кликабельных карточек заказов для пользователей группы "Администратор" или группы "Продавец"
   Widget buildClickableOrderCard(BuildContext context, QueryDocumentSnapshot doc, String amount, String date, int number, String state, String weight) {
     return InkWell(
       onTap: () async {
         bool isAdministrator = await _authService.isItRightRole(adminRole);
+        bool isSalesperson = await _authService.isItRightRole(salespersonRole);
 
         if (isAdministrator) {
           String documentId = doc.id;
           print('Document ID: $documentId');
           print("button pressed");
+
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return EditOrderDialog(docID: doc.id, docNumber: number);
+            },
+          );
+
+        } else if (isSalesperson) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return EditOrderStateDialog(docID: doc.id, docNumber: number);
+            },
+          );
         } else {
           print("Роль не совпадает");
         }
 
-        // переделать на редактирование
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return EditOrderDialog(docID: doc.id, docNumber: number);
-          },
-        );
       },
-      child: _buildOrderCard(context, amount, date, number, state, weight),
+      child: buildOrderCard(context, amount, date, number, state, weight),
     );
   }
 
   // возврат некликабельных карточек заказов
   Widget buildNonClickableOrderCard(BuildContext context, String amount, String date, int number, String state, String weight) {
-    return _buildOrderCard(context, amount, date, number, state, weight);
+    return buildOrderCard(context, amount, date, number, state, weight);
   }
 
   // виджет карточек заказов
-  Widget _buildOrderCard(BuildContext context, String amount, String date, int number, String state, String weight) {
+  Widget buildOrderCard(BuildContext context, String amount, String date, int number, String state, String weight) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 5, 16, 5),
       child: Container(
@@ -531,7 +582,7 @@ class _OrdersPageState extends State<OrdersPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildRichText(context, number),
+                      buildOrderNumberText(context, number),
                       Padding(
                         padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
                         child: Text(
@@ -550,16 +601,16 @@ class _OrdersPageState extends State<OrdersPage> {
               if (MediaQuery.of(context).size.width > 650)
                 Expanded(
                   flex: 1,
-                  child: _buildContainer('$weight г', const Color(0xFFF1F4F8)),
+                  child: buildWeightAndStateText('$weight г'),
                 ),
               if (MediaQuery.of(context).size.width > 650)
                 Expanded(
                   flex: 2,
-                  child: _buildContainer(state, const Color(0x4D9489F5)),
+                  child: buildWeightAndStateText(state),
                 ),
               Expanded(
                 flex: 2,
-                child: _buildColumn(context, amount, state),
+                child: buildAmountText(context, amount, state),
               ),
             ],
           ),
@@ -568,7 +619,8 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
-  Widget _buildRichText(BuildContext context, int number) {
+  // виджет для отрисовки номера заказа
+  Widget buildOrderNumberText(BuildContext context, int number) {
     return RichText(
       text: TextSpan(
         children: [
@@ -593,17 +645,10 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
-  Widget _buildContainer(String text, Color color) {
+  // виджет для отрисовки веса и состояния заказа
+  Widget buildWeightAndStateText(String text) {
     return SizedBox(
       height: 32,
-      // decoration: BoxDecoration(
-      //   color: color,
-      //   borderRadius: BorderRadius.circular(12),
-      //   border: Border.all(
-      //     color: borderColor,
-      //     width: 2,
-      //   ),
-      // ),
       child: Align(
         alignment: const AlignmentDirectional(0, 0),
         child: Padding(
@@ -621,7 +666,8 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
-  Widget _buildColumn(BuildContext context, String amount, String state) {
+  // виджет для отрисовки стоимости заказа
+  Widget buildAmountText(BuildContext context, String amount, String state) {
     return Column(
       mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -638,7 +684,7 @@ class _OrdersPageState extends State<OrdersPage> {
         if (MediaQuery.of(context).size.width <= 650)
           Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-            child: _buildContainer(state, const Color(0x4D9489F5)),
+            child: buildWeightAndStateText(state),
           ),
       ],
     );

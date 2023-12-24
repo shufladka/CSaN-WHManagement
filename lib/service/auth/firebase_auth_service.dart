@@ -245,7 +245,7 @@ class FirebaseAuthService {
   }
 
   // проверка на принадлежность пользователя к привилегированной группе "Администратор"
-  Future<bool> checkingForAdministratorPrivileges(String rightRole) async {
+  Future<bool> checkingForPrivileges(String rightRole) async {
     try {
       // Получение результата проверки
       bool isAdmin = await _authService.isItRightRole(rightRole);

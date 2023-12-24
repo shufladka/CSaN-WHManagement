@@ -15,36 +15,14 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final unfocusNode = FocusNode();
-
-
   @override
   void initState() {
     super.initState();
-
-    unfocusNode.addListener(() {
-      if (unfocusNode.hasFocus) {
-        unfocusNode.unfocus();
-      }
-    });
-  }
-
-  // Метод для вызова удаления сохраненных данных
-  Future<void> _clearSavedData() async {
-    await ClearUserData().clearSavedData();
-  }
-
-  // Вызов метода для очистки сохраненных данных и выхода из аккаунта
-  void _clearUserData() async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.pushReplacementNamed(context, "sign_in");
-    _clearSavedData();
   }
 
   @override
   void dispose() {
     super.dispose();
-    unfocusNode.dispose();
   }
 
   @override
@@ -52,25 +30,20 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
     return Title(
       title: 'Панель администратора',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
-      child: GestureDetector(
-        onTap: () => unfocusNode.canRequestFocus
-            ? FocusScope.of(context).requestFocus(unfocusNode)
-            : FocusScope.of(context).unfocus(),
-        child: Scaffold(
-          key: scaffoldKey,
-          backgroundColor: Colors.white,
-          body: Align(
-            alignment: const AlignmentDirectional(0.00, 0.00),
-            child: SingleChildScrollView(
-              child: buildSignInForm(context),
-            ),
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: Colors.white,
+        body: Align(
+          alignment: const AlignmentDirectional(0.00, 0.00),
+          child: SingleChildScrollView(
+            child: buildAdminPanelForm(context),
           ),
         ),
       ),
     );
   }
 
-  Widget buildSignInContainer(BuildContext context) {
+  Widget buildAdminPanelContainer(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
@@ -92,18 +65,13 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildTitle(context),
-        getDisplayCurrentUserNameButton(context),
+        buildSetDefaultRolePageButton(context),
         buildLobbyPageButton(context),
-
-        //buildClearUserDataButton(context),
-        //buildSubmitButton(context),
-        //buildTestButton(context),
-        //getNewNameToCurrentUserButton(context),
       ],
     );
   }
 
-  Widget buildSignInForm(BuildContext context) {
+  Widget buildAdminPanelForm(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0.00, 0.00),
       child: Container(
@@ -120,7 +88,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
           alignment: const AlignmentDirectional(0.00, 0.00),
           child: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(32, 10, 32, 32),
-            child: buildSignInContainer(context),
+            child: buildAdminPanelContainer(context),
           ),
         ),
       ),
@@ -145,24 +113,15 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
     );
   }
 
-  Widget buildSubmitButton(BuildContext context) {
+  Widget buildSetDefaultRolePageButton(BuildContext context) {
     return BuildButtonWidget(
-      buttonText: 'ПЕРЕЙТИ В МЕНЮ АУТЕНТИФИКАЦИИ',
+      buttonText: 'ПРАВА НОВЫХ ПОЛЬЗОВАТЕЛЕЙ',
       onPressed: () {
-        Navigator.pushReplacementNamed(context, "sign_in");
+        Navigator.pushReplacementNamed(context, "default_role");
       },
     );
   }
-
-  Widget buildClearUserDataButton(BuildContext context) {
-    return BuildExitButtonWidget(
-      buttonText: 'ЗАБЫТЬ ДАННЫЕ ДЛЯ ВХОДА',
-      onPressed: () {
-        _clearUserData();
-      },
-    );
-  }
-
+  
   Widget buildLobbyPageButton(BuildContext context) {
     return BuildButtonWidget(
       buttonText: 'ВЕРНУТЬСЯ В ЛОББИ',
@@ -171,46 +130,4 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
       },
     );
   }
-
-  Widget getDisplayCurrentUserNameButton(BuildContext context) {
-    return BuildButtonWidget(
-      buttonText: 'ПРАВА НОВЫХ ПОЛЬЗОВАТЕЛЕЙ',
-      onPressed: () {
-        Navigator.pushReplacementNamed(context, "default_role");
-        //print(FirebaseAuth.instance.currentUser!.displayName);
-
-      },
-    );
-  }
-
-/*
-  Widget getNewNameToCurrentUserButton(BuildContext context) {
-    return BuildButtonWidget(
-      buttonText: 'ДАТЬ ПРАВА АДМИНИСТРАТОРА',
-      onPressed: () {
-        //Navigator.pushReplacementNamed(context, "test");
-        setDisplayName('administrator');
-      },
-    );
-  }
-
-  void setDisplayName(String displayName) async {
-    try {
-      // Получаем текущего пользователя
-      User? user = FirebaseAuth.instance.currentUser;
-
-      // Обновляем профиль пользователя с новым displayName
-      await user?.updateProfile(displayName: displayName);
-
-      // Обновляем информацию о пользователе в Firestore или другом месте, где хранятся данные пользователя
-
-      // Печатаем успешное сообщение
-      print('displayName успешно обновлен: $displayName');
-    } catch (e) {
-      // Обработка ошибок при установке displayName
-      print('Ошибка при обновлении displayName: $e');
-    }
-  }
-
-   */
 }

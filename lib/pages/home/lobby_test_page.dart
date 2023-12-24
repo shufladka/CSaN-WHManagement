@@ -21,6 +21,7 @@ class _LobbyTestPageState extends State<LobbyTestPage> {
   late final FirebaseFirestore _database = FirebaseFirestore.instance;
 
   String adminRole = 'administrator';
+  String salespersonRole = 'salesperson';
 
   // подключение к базе данных Firebase
   void initFirebase() async {
@@ -68,7 +69,7 @@ class _LobbyTestPageState extends State<LobbyTestPage> {
               constraints: const BoxConstraints(
                 maxWidth: 1170, // Set your desired maximum width
               ),
-              child: checkingForPrivilegedRole(context, adminRole),
+              child: checkingForPrivilegedRole(context),
             ),
           ),
         ),
@@ -76,34 +77,51 @@ class _LobbyTestPageState extends State<LobbyTestPage> {
     );
   }
 
-  // отрисовка страницы меню осуществляется на основе прав пользователей
-  FutureBuilder<bool> checkingForPrivilegedRole(BuildContext context, String adminRole) {
+  // проверка на привилегированную роль пользователя
+  FutureBuilder<bool> checkingForPrivilegedRole(BuildContext context) {
     return FutureBuilder<bool>(
-      future: _authService.isItRightRole(adminRole),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-
-          // показываем анимацию загрузки, если привилегированная роль не обнаружена
+      future: _authService.isItRightRole(adminRole), // Проверка adminRole
+      builder: (context, adminSnapshot) {
+        if (adminSnapshot.connectionState == ConnectionState.waiting) {
+          // Показываем анимацию загрузки, если привилегированная роль не обнаружена
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        // проверяем результат и строим виджеты в зависимости от него
-        if (snapshot.data == true) {
-
-          // если привилегированная роль обнаружена, показываем полную страницу
+        // Проверяем результат и строим виджеты в зависимости от него
+        if (adminSnapshot.data == true) {
+          // Если привилегированная роль adminRole обнаружена, показываем полную страницу
           return buildFullPage(context);
         } else {
+          // Если привилегированная роль adminRole не обнаружена, проверяем salespersonRole
+          return FutureBuilder<bool>(
+            future: _authService.isItRightRole(salespersonRole),
+            builder: (context, salespersonSnapshot) {
+              if (salespersonSnapshot.connectionState == ConnectionState.waiting) {
+                // Показываем анимацию загрузки, если привилегированная роль не обнаружена
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
 
-          // если привилегированная роль не обнаружена, показываем страницу без кнопки создания нового заказа
-          return buildPageWithoutCreateButton(context);
+              // Проверяем результат и строим виджеты в зависимости от него
+              if (salespersonSnapshot.data == true) {
+                // Если привилегированная роль salespersonRole обнаружена, показываем полную страницу
+                return buildPageWithoutAdminPanelButton(context);
+              } else {
+                // Если ни adminRole, ни salespersonRole не обнаружены, показываем страницу без кнопки создания нового заказа
+                return buildPageWithoutAnythingButton(context);
+              }
+            },
+          );
         }
       },
     );
   }
 
-  // отрисовка страницы заказов для пользователя с полным доступом
+
+  // отрисовка страницы меню для пользователя с полным доступом
   Widget buildFullPage(BuildContext context) {
     return Stack(
       children: [
@@ -132,8 +150,8 @@ class _LobbyTestPageState extends State<LobbyTestPage> {
     );
   }
 
-  // отрисовка страницы заказов для пользователя без права доступа к изменению БД
-  Widget buildPageWithoutCreateButton(BuildContext context) {
+  // отрисовка страницы меню для пользователя без доступа к панели администратора
+  Widget buildPageWithoutAdminPanelButton(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0, -1),
       child: Container(
@@ -149,7 +167,31 @@ class _LobbyTestPageState extends State<LobbyTestPage> {
             children: [
               buildCroppedHeader(context),
               buildOrderHeader(context),
-              buildOrdersPageButton(context),
+              buildClickableOrdersPageButton(context),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // отрисовка страницы меню для пользователя без права доступа к базе данных
+  Widget buildPageWithoutAnythingButton(BuildContext context) {
+    return Align(
+      alignment: const AlignmentDirectional(0, -1),
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(
+          maxWidth: 1170,
+          minWidth: 360,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildCroppedHeader(context),
+              buildErrorWithOrdersPageButton(context),
             ],
           ),
         ),
@@ -429,8 +471,9 @@ class _LobbyTestPageState extends State<LobbyTestPage> {
     return InkWell(
       onTap: () async {
         bool isAdministrator = await _authService.isItRightRole(adminRole);
+        bool isSalesperson = await _authService.isItRightRole(salespersonRole);
 
-        if (isAdministrator) {
+        if (isAdministrator || isSalesperson) {
           Navigator.pushReplacementNamed(context, "orders");
           print("button pressed");
 
@@ -504,6 +547,7 @@ class _LobbyTestPageState extends State<LobbyTestPage> {
     );
   }
 
+  // виджет для отображения оборота заказов
   Widget buildNumberOfOrdersText(BuildContext context) {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: _database.collection('technical_information').doc('number_of_orders').snapshots(),
@@ -532,6 +576,44 @@ class _LobbyTestPageState extends State<LobbyTestPage> {
           );
         }
       },
+    );
+  }
+
+  // отрисовка списка пунктов выдачи обычному пользователю
+  Widget buildErrorWithOrdersPageButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 5, 16, 5),
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: const Color(0xFFE5E7EB),
+            width: 2,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
+                child: Text(
+                  "ДАННЫЕ НЕДОСТУПНЫ. ОБРАТИТЕСЬ К АДМИНИСТРАТОРУ",
+                  style: GoogleFonts.montserrat(
+                    color: const Color(0xFF161718),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

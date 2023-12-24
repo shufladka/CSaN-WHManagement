@@ -422,7 +422,7 @@ class _EditOrderStateDialogState extends State<EditOrderStateDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       content: SizedBox(
-        height: 170,
+        height: 220,
         width: 400,
         child: SingleChildScrollView(
           child: Padding(
