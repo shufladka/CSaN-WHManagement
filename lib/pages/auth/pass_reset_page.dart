@@ -1,5 +1,5 @@
 import 'package:csan/service/auth/firebase_auth_service.dart';
-import 'package:csan/service/auth/form_validator.dart';
+import 'package:csan/service/auth/form_validation_service.dart';
 import 'package:csan/widgets/input_decoration_widget.dart';
 import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -70,7 +70,7 @@ class _PassResetPageState extends State<PassResetPage> {
   @override
   Widget build(BuildContext context) {
     return Title(
-      title: 'pass_reset',
+      title: 'Сброс пароля',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
       child: GestureDetector(
         onTap: () => unfocusNode.canRequestFocus
@@ -114,6 +114,7 @@ class _PassResetPageState extends State<PassResetPage> {
         buildTitle(context),
         buildEmailField(context),
         buildSubmitButton(context),
+        buildReturnButton(context),
       ],
     );
   }
@@ -199,6 +200,15 @@ class _PassResetPageState extends State<PassResetPage> {
         if (formValidator.validateForm(context)) {
           _passwordReset();
         }
+      },
+    );
+  }
+
+  Widget buildReturnButton(BuildContext context) {
+    return BuildExitButtonWidget(
+      buttonText: 'ВЕРНУТЬСЯ',
+      onPressed: () {
+        Navigator.pushReplacementNamed(context, "sign_in");
       },
     );
   }

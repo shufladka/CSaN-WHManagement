@@ -1,11 +1,14 @@
+import 'package:csan/pages/admin_panel/admin_panel_page.dart';
+import 'package:csan/pages/admin_panel/set_default_role_page.dart';
+import 'package:csan/pages/home/lobby_test_page.dart';
+import 'package:csan/pages/home/orders_page.dart';
 import 'package:firebase_core/firebase_core.dart';
-// import 'package:flutter/foundation.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'pages/auth/sign_in_page.dart';
 import 'pages/auth/sign_up_page.dart';
-import 'pages/home/lobby_page.dart';
 import 'pages/auth/pass_reset_page.dart';
+import 'pages/home/lobby_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,27 +27,51 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'title',
       theme: ThemeData(
-        // Здесь вы можете настроить тему приложения, если необходимо
         primarySwatch: Colors.blue,
-
-        // отключает анимации, но при этом появляются фризы и задержки
-        // pageTransitionsTheme: const PageTransitionsTheme(builders: {
-        //   TargetPlatform.android: NoTransitionsPageTransitionsBuilder(),
-        //   TargetPlatform.iOS: NoTransitionsPageTransitionsBuilder(),
-        //   TargetPlatform.linux: NoTransitionsPageTransitionsBuilder(),
-        //   TargetPlatform.macOS: NoTransitionsPageTransitionsBuilder(),
-        //   TargetPlatform.windows: NoTransitionsPageTransitionsBuilder(),
-        // }),
       ),
-      initialRoute: '/', // Задайте вашу начальную страницу, если нужно
-      routes: {
-        '/': (context) => const SignInPage(), // маршруты
-        'sign_in': (context) => const SignInPage(), // вход в приложение
-        'sign_up': (context) => const SignUpPage(), // регистрация
-        'pass_reset': (context) => const PassResetPage(), // сброс пароля
-        'lobby':  (context) => const LobbyPage(), // лобби приложения
+      initialRoute: 'sign_in',
+      onGenerateRoute: (settings) {
+        return MaterialPageRoute(
+          builder: (context) {
+            switch (settings.name) {
+              case '/':
+                return const SignInPage();
+              case 'sign_in':
+                return const SignInPage();
+              case 'sign_up':
+                return const SignUpPage();
+              case 'pass_reset':
+                return const PassResetPage();
+              case 'lobby':
+                return const LobbyTestPage();
+//                return const LobbyPage();
+//              case 'test':
+//                return const LobbyTestPage();
+              case 'orders':
+                return const OrdersPage();
+              case 'admin_panel':
+                return const AdminPanelPage();
+              case 'default_role':
+                return const SetDefaultRolePage();
+              default:
+                return const SignInPage();
+            }
+          },
+        );
       },
+      navigatorObservers: [MyNavigatorObserver()],
     );
+  }
+}
+
+// метод, который следит за переходами между страницами
+class MyNavigatorObserver extends NavigatorObserver {
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    // Проверка на переход из адресной строки
+    if (previousRoute != null && route.settings.name != previousRoute.settings.name) {
+      Navigator.of(route.navigator!.context).pop();
+    }
   }
 }
 

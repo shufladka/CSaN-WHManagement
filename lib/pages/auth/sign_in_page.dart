@@ -1,5 +1,5 @@
 import 'package:csan/service/auth/firebase_auth_service.dart';
-import 'package:csan/service/auth/form_validator.dart';
+import 'package:csan/service/auth/form_validation_service.dart';
 import 'package:csan/widgets/input_decoration_widget.dart';
 import 'package:csan/widgets/submit_button_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,7 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInPage extends StatefulWidget {
-  const SignInPage({Key? key}) : super(key: key);
+  const SignInPage({super.key});
 
   @override
   _SignInPageState createState() => _SignInPageState();
@@ -49,7 +49,7 @@ class _SignInPageState extends State<SignInPage> {
     User? user = await _auth.signInEmailPassword(context, email, password);
 
     if (user != null) {
-      print('user is successfully created.');
+      print('user successfully signed in.');
       _saveData(); // Добавлен вызов _saveData
       Navigator.pushReplacementNamed(context, "lobby");
     } else {
@@ -86,6 +86,7 @@ class _SignInPageState extends State<SignInPage> {
     super.dispose();
   }
 
+  // метод для автозагрузки сохраненных данных
   Future<void> _loadSavedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -97,6 +98,7 @@ class _SignInPageState extends State<SignInPage> {
     });
   }
 
+  // метод для сохранения введенных данных
   Future<void> _saveData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('rememberMe', checkboxValue!);
@@ -109,7 +111,7 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return Title(
-      title: 'sign_in',
+      title: 'Вход',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
       child: GestureDetector(
         onTap: () => unfocusNode.canRequestFocus
@@ -214,7 +216,6 @@ class _SignInPageState extends State<SignInPage> {
         focusNode: emailFocusNode,
         textCapitalization: TextCapitalization.none,
         obscureText: false,
-        //decoration: buildInputDecoration(context, 'почтовый адрес или псевдоним'),
         decoration: InputDecorationBuilder.buildInputDecoration(context, 'почтовый адрес'),
         style: GoogleFonts.montserrat(
           fontSize: 15,
@@ -406,7 +407,7 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   Widget buildForgotPasswordButton(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Center(
         child: Padding(
@@ -417,7 +418,7 @@ class _SignInPageState extends State<SignInPage> {
               // Navigator.of(context).pushNamed('lobby');
             },
             child: Container(
-              color: Colors.white, // Белый фон
+              color: Colors.white, // белый фон
               //padding: EdgeInsets.all(12),
               child: Text(
                 'забыли пароль?',
