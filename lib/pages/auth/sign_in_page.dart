@@ -18,6 +18,9 @@ class _SignInPageState extends State<SignInPage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  // переменная для скрытия клавиатуры нажатием по пустому полю
+  final unfocusNode = FocusNode();
+
   FocusNode? emailFocusNode;
   TextEditingController? emailController;
 
@@ -73,6 +76,7 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   void dispose() {
+    unfocusNode.dispose();
 
     emailFocusNode?.dispose();
     emailController?.dispose();
@@ -118,13 +122,18 @@ class _SignInPageState extends State<SignInPage> {
     return Title(
       title: 'Вход',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: Colors.white,
-        body: Align(
-          alignment: const AlignmentDirectional(0.00, 0.00),
-          child: SingleChildScrollView(
-            child: buildSignInForm(context),
+      child: GestureDetector(
+        onTap: () => unfocusNode.canRequestFocus
+            ? FocusScope.of(context).requestFocus(unfocusNode)
+            : FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          key: scaffoldKey,
+          backgroundColor: Colors.white,
+          body: Align(
+            alignment: const AlignmentDirectional(0.00, 0.00),
+            child: SingleChildScrollView(
+              child: buildSignInForm(context),
+            ),
           ),
         ),
       ),

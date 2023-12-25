@@ -15,6 +15,9 @@ class SetDefaultRolePageState extends State<SetDefaultRolePage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  // переменная для скрытия клавиатуры нажатием по пустому полю
+  final unfocusNode = FocusNode();
+
   FocusNode? roleFocusNode;
   TextEditingController? roleController;
 
@@ -51,7 +54,7 @@ class SetDefaultRolePageState extends State<SetDefaultRolePage> {
   @override
   void dispose() {
     super.dispose();
-
+    unfocusNode.dispose();
     roleFocusNode?.dispose();
     roleController?.dispose();
   }
@@ -64,13 +67,19 @@ class SetDefaultRolePageState extends State<SetDefaultRolePage> {
           .of(context)
           .primaryColor
           .withAlpha(0XFF),
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: Colors.white,
-        body: Align(
-          alignment: const AlignmentDirectional(0.00, 0.00),
-          child: SingleChildScrollView(
-            child: buildSetDefaultRoleForm(context),
+      child: GestureDetector(
+        onTap: () =>
+        unfocusNode.canRequestFocus
+            ? FocusScope.of(context).requestFocus(unfocusNode)
+            : FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          key: scaffoldKey,
+          backgroundColor: Colors.white,
+          body: Align(
+            alignment: const AlignmentDirectional(0.00, 0.00),
+            child: SingleChildScrollView(
+              child: buildSetDefaultRoleForm(context),
+            ),
           ),
         ),
       ),
