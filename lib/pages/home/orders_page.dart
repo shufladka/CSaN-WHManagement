@@ -17,10 +17,11 @@ class _OrdersPageState extends State<OrdersPage> {
 
   late final FirebaseAuthService _authService = FirebaseAuthService();
 
+  // инициализация переменных для хранения имен прав привилегированных пользователей
   String adminRole = 'administrator';
   String salespersonRole = 'salesperson';
 
-  // подключение к базе данных Firebase
+  // подключение к базе данных Firestore Database
   void initFirebase() async {
     WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp();
@@ -29,9 +30,7 @@ class _OrdersPageState extends State<OrdersPage> {
   @override
   void initState() {
     super.initState();
-
     initFirebase();
-
     WidgetsBinding.instance.addPostFrameCallback((_) => setState(() {}));
   }
 
@@ -64,40 +63,48 @@ class _OrdersPageState extends State<OrdersPage> {
     );
   }
 
-  // отрисовка страницы заказов осуществляется на основе прав пользователей (admin)
+  // проверка на привилегированную роль пользователя
   FutureBuilder<bool> checkingForPrivilegedRole(BuildContext context) {
     return FutureBuilder<bool>(
-      future: _authService.isItRightRole(adminRole), // Проверка adminRole
+
+      // проверка на принадлежность пользователя к привилегии "Администратор"
+      future: _authService.isItRightRole(adminRole),
       builder: (context, adminSnapshot) {
         if (adminSnapshot.connectionState == ConnectionState.waiting) {
-          // Показываем анимацию загрузки, если привилегированная роль не обнаружена
+
+          // показываем анимацию загрузки, если привилегированная роль не обнаружена
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        // Проверяем результат и строим виджеты в зависимости от него
+        // проверяем результат и строим страницу в соответствии с привилегией
         if (adminSnapshot.data == true) {
-          // Если привилегированная роль adminRole обнаружена, показываем полную страницу
+
+          // если привилегированная роль "Администратор" обнаружена, показываем полную страницу
           return buildFullPage(context);
         } else {
-          // Если привилегированная роль adminRole не обнаружена, проверяем salespersonRole
+
+          // если привилегированная роль "Администратор" не обнаружена, проверяем на принадлежность к привилегии "Продавец"
           return FutureBuilder<bool>(
             future: _authService.isItRightRole(salespersonRole),
             builder: (context, salespersonSnapshot) {
               if (salespersonSnapshot.connectionState == ConnectionState.waiting) {
-                // Показываем анимацию загрузки, если привилегированная роль не обнаружена
+
+                // показываем анимацию загрузки, если привилегированная роль не обнаружена
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
               }
 
-              // Проверяем результат и строим виджеты в зависимости от него
+              // проверяем результат и строим страницу в соответствии с привилегией
               if (salespersonSnapshot.data == true) {
-                // Если привилегированная роль salespersonRole обнаружена, показываем страницу без кнопки создания нового заказа
+
+                // если привилегированная роль "Продавец" обнаружена, показываем страницу без кнопки создания нового заказа
                 return buildPageWithoutCreateButton(context);
               } else {
-                // Если ни adminRole, ни salespersonRole не обнаружены, показываем страницу с просьбой обратиться к администратору
+
+                // если привилегии не обнаружены, показываем страницу с просьбой обратиться к администратору
                 return buildPageWithoutAnything(context);
               }
             },
@@ -133,6 +140,8 @@ class _OrdersPageState extends State<OrdersPage> {
             ),
           ),
         ),
+
+        // отрисовка кнопки для создания нового заказа
         Positioned(
           left: 0,
           right: 0,
@@ -236,6 +245,8 @@ class _OrdersPageState extends State<OrdersPage> {
   // метод для автоматической подгрузки виджетов заказов из базы данных с кликабельными полями
   Widget customStreamBuilder(BuildContext context) {
     return StreamBuilder(
+
+      // получение списка таблиц заказов из коллекции 'orders', отсортированного по номеру заказа
       stream: FirebaseFirestore.instance.collection('orders').orderBy('number').snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -248,28 +259,28 @@ class _OrdersPageState extends State<OrdersPage> {
           return Text('Error: ${snapshot.error}');
         }
 
+        // показываем пустое поле, если данных нет
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return emptyTextWidget(); // Показываем текст, если данных нет
+          return emptyTextWidget();
         }
 
-        // Если данные есть, обрабатываем их
+        // если данные есть, обрабатываем их
         List<Widget> orderWidgets = [];
         for (QueryDocumentSnapshot doc in snapshot.data!.docs) {
-          // Получаем данные из документа (парсим)
+
+          // получаем (парсим) данные из документа
           String amount = doc['amount'];
           String date = doc['date'];
           int number = doc['number'];
           String state = doc['state'];
           String weight = doc['weight'];
 
-          // Добавляем виджет с данными в список
+          // добавляем виджет с данными в список заказов
           orderWidgets.add(buildClickableOrderCard(context, doc, amount, date, number, state, weight));
         }
 
-        // Возвращаем список виджетов
-        return Column(
-          children: orderWidgets,
-        );
+        // возвращаем список виджетов
+        return Column(children: orderWidgets);
       },
     );
   }
@@ -290,7 +301,9 @@ class _OrdersPageState extends State<OrdersPage> {
             backgroundColor: Colors.red[700],
             elevation: 3,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8), // устанавливаем радиус закругления
+
+              // устанавливаем радиус закругления бортов кнопки
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
           child: Text(
@@ -309,12 +322,10 @@ class _OrdersPageState extends State<OrdersPage> {
   // виджет кнопки для создания нового заказа
   Widget buildCreateNewOrderButton(BuildContext context) {
     return Align(
-      //alignment: const AlignmentDirectional(0, 0),
       child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(70, 0, 70, 0), // Изменил отступы
+        padding: const EdgeInsetsDirectional.fromSTEB(70, 0, 70, 0),
         child: ElevatedButton(
           onPressed: () async {
-            //print('Button pressed ...');
             showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -326,9 +337,13 @@ class _OrdersPageState extends State<OrdersPage> {
             backgroundColor: Colors.black87,
             elevation: 3,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8), // устанавливаем радиус закругления
+
+              // устанавливаем радиус закругления бортов кнопки
+              borderRadius: BorderRadius.circular(8),
             ),
-            minimumSize: const Size(double.infinity, 55), // растягиваем кнопку по ширине
+
+            // растягиваем кнопку по ширине
+            minimumSize: const Size(double.infinity, 55),
           ),
           child: Text(
             'ДОБАВИТЬ НОВЫЙ ЗАКАЗ',
@@ -461,7 +476,9 @@ class _OrdersPageState extends State<OrdersPage> {
                   ),
                 ),
               ),
-              if (screenWidth > 650) // ограничение по минимальной ширине
+
+              // ограничение по минимальной ширине
+              if (screenWidth > 650)
                 Expanded(
                   flex: 2,
                   child: Text(
@@ -473,7 +490,9 @@ class _OrdersPageState extends State<OrdersPage> {
                     ),
                   ),
                 ),
-              if (screenWidth > 650) // ограничение по минимальной ширине
+
+              // ограничение по минимальной ширине
+              if (screenWidth > 650)
                 Expanded(
                   flex: 4,
                   child: Text(
@@ -503,7 +522,6 @@ class _OrdersPageState extends State<OrdersPage> {
       ),
     );
   }
-
 
   // добавляет пустое поле внизу страницы
   Widget emptyTextWidget() {
@@ -586,7 +604,7 @@ class _OrdersPageState extends State<OrdersPage> {
                       Padding(
                         padding: const EdgeInsetsDirectional.fromSTEB(0, 4, 0, 0),
                         child: Text(
-                          date,  // дата из БД
+                          date,  // дата из базы данных
                           style: GoogleFonts.montserrat(
                             color: const Color(0xFF606A85),
                             fontSize: 14,
@@ -673,7 +691,7 @@ class _OrdersPageState extends State<OrdersPage> {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          'BYN $amount',
+          '$amount BYN',
           textAlign: TextAlign.end,
           style: GoogleFonts.montserrat(
             color: const Color(0xFF15161E),

@@ -18,8 +18,6 @@ class _SignInPageState extends State<SignInPage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final unfocusNode = FocusNode();
-
   FocusNode? emailFocusNode;
   TextEditingController? emailController;
 
@@ -75,7 +73,6 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   void dispose() {
-    unfocusNode.dispose();
 
     emailFocusNode?.dispose();
     emailController?.dispose();
@@ -89,8 +86,14 @@ class _SignInPageState extends State<SignInPage> {
   // метод для автозагрузки сохраненных данных
   Future<void> _loadSavedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // получения состояния чекбокса
     setState(() {
+
+      // получение состояния чекбокса
       checkboxValue = prefs.getBool('rememberMe') ?? checkBoxDefaultState;
+
+      // если чекбокс прожат, подгружаем поля почтового адреса и пароля в соответствующие поля
       if (checkboxValue!) {
         emailController!.text = prefs.getString('savedEmail') ?? '';
         passwordController!.text = prefs.getString('savedPassword') ?? '';
@@ -102,6 +105,8 @@ class _SignInPageState extends State<SignInPage> {
   Future<void> _saveData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('rememberMe', checkboxValue!);
+
+    // если чекбокс прожат, сохраняем поля почтового адреса и пароля
     if (checkboxValue!) {
       prefs.setString('savedEmail', emailController!.text);
       prefs.setString('savedPassword', passwordController!.text);
@@ -113,41 +118,36 @@ class _SignInPageState extends State<SignInPage> {
     return Title(
       title: 'Вход',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
-      child: GestureDetector(
-        onTap: () => unfocusNode.canRequestFocus
-            ? FocusScope.of(context).requestFocus(unfocusNode)
-            : FocusScope.of(context).unfocus(),
-        child: Scaffold(
-          key: scaffoldKey,
-          backgroundColor: Colors.white,
-          body: Align(
-            alignment: const AlignmentDirectional(0.00, 0.00),
-            child: SingleChildScrollView(
-              child: buildSignInForm(context),
-            ),
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: Colors.white,
+        body: Align(
+          alignment: const AlignmentDirectional(0.00, 0.00),
+          child: SingleChildScrollView(
+            child: buildSignInForm(context),
           ),
         ),
       ),
     );
   }
 
-
+  // контейнер страницы входа в приложение
   Widget buildSignInContainer(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height * 1,
+      height: MediaQuery.of(context).size.height,
       constraints: const BoxConstraints(
         minWidth: 300,
         maxWidth: 600,
       ),
       decoration: const BoxDecoration(
-        color: Colors.white, // Заменил на классический цвет
+        color: Colors.white,
       ),
       child: buildFormFields(context),
     );
   }
 
-
+  // форма полей страницы входа в приложение
   Widget buildFormFields(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.max,
@@ -165,6 +165,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
+  // построение формы страницы входа в приложение
   Widget buildSignInForm(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0.00, 0.00),
@@ -176,13 +177,12 @@ class _SignInPageState extends State<SignInPage> {
           maxWidth: 600,
         ),
         decoration: const BoxDecoration(
-          color: Colors.white, // Use your desired color
+          color: Colors.white,
         ),
         child: Align(
           alignment: const AlignmentDirectional(0.00, 0.00),
           child: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(32, 10, 32, 32),
-            //child: buildFormFields(context),
             child: buildSignInContainer(context),
           ),
         ),
@@ -190,6 +190,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
+  // виджет заголовка страницы входа в приложение
   Widget buildTitle(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0.00, 0.00),
@@ -208,6 +209,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
+  // форма поля ввода почтового адреса
   Widget buildEmailField(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
@@ -227,6 +229,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
+  // форма ввода пароля
   Widget buildPasswordField(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
@@ -245,6 +248,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
+  // декоратор поля ввода пароля
   InputDecoration buildPasswordInputDecoration(BuildContext context) {
     return InputDecoration(
       hintText: 'пароль',
@@ -295,6 +299,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
+  // виджет с чекбоксом для запоминания последних введенных данных пользователя
   Widget buildRememberMeCheckbox(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.max,
@@ -335,6 +340,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
+  // виджет кнопки отправки формы для входа в приложение
   Widget buildSignInButton(BuildContext context) {
 
     // экземпляр класса валидации формы регистрации нового пользователя
@@ -349,6 +355,7 @@ class _SignInPageState extends State<SignInPage> {
     return BuildButtonWidget(
       buttonText: 'ВОЙТИ',
       onPressed: () {
+
         // если форма валидна, переходим к странице входа в аккаунт
         if (formValidator.validateForm(context)) {
           _signIn();
@@ -357,6 +364,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
+  // виджет кнопки с переходом на страницу регистрации
   Widget buildRegistrationLink(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
@@ -406,6 +414,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
+  // виджет кнопки с переходом на страницу восстановления пароля
   Widget buildForgotPasswordButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
@@ -415,11 +424,9 @@ class _SignInPageState extends State<SignInPage> {
           child: InkWell(
             onTap: () {
               Navigator.of(context).pushNamed('pass_reset');
-              // Navigator.of(context).pushNamed('lobby');
             },
             child: Container(
               color: Colors.white, // белый фон
-              //padding: EdgeInsets.all(12),
               child: Text(
                 'забыли пароль?',
                 textAlign: TextAlign.center, // Выравнивание по центру

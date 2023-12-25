@@ -1,6 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+// класс кастомного валидатора полей почтового адреса, пароля и, при наличии, подтверждения пароля
 class CustomFormValidator {
   final TextEditingController? emailController;
   final TextEditingController? passwordController;
@@ -26,7 +26,8 @@ class CustomFormValidator {
         if (needConfirmPassword && confirmPasswordController!.text.isEmpty) {
           return true;
         } else if (!needConfirmPassword) {
-          // Если подтверждение пароля не требуется, форма считается пустой
+
+          // если подтверждение пароля не требуется, форма считается пустой
           return true;
         }
       }
@@ -51,7 +52,7 @@ class CustomFormValidator {
               color: Colors.white,
               fontSize: customFontSize,
               fontWeight: FontWeight.w500,
-              fontFamily: 'Montserrat', // Укажите название вашего шрифта
+              fontFamily: 'Montserrat',
             ),
           ),
           backgroundColor: Colors.red,
@@ -66,10 +67,6 @@ class CustomFormValidator {
     if (emailValidate(context)) {
       if (passwordValidate(context)) {
         if (compareValidator(context)) {
-
-          //  код для обработки создания аккаунта (будет стерт)
-          print('Button pressed ...');
-
           return true;
         }
       }
@@ -81,7 +78,7 @@ class CustomFormValidator {
   // верификация поля "почтовый адрес"
   bool emailValidate(BuildContext context) {
 
-    // для упрощения валидации по почтовому адресу
+    // для упрощения валидации по почтовому адресу сделаем её через регулярное выражение
     RegExp emailRegExp = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
 
     if (emailController!.text.length < 7 || emailController!.text.length > 320) {
@@ -95,7 +92,7 @@ class CustomFormValidator {
               color: Colors.white,
               fontSize: customFontSize,
               fontWeight: FontWeight.w500,
-              fontFamily: 'Montserrat', // Укажите название вашего шрифта
+              fontFamily: 'Montserrat',
             ),
           ),
           backgroundColor: Colors.red,
@@ -117,7 +114,7 @@ class CustomFormValidator {
               color: Colors.white,
               fontSize: customFontSize,
               fontWeight: FontWeight.w500,
-              fontFamily: 'Montserrat', // Укажите название вашего шрифта
+              fontFamily: 'Montserrat',
             ),
           ),
           backgroundColor: Colors.red,
@@ -135,6 +132,7 @@ class CustomFormValidator {
   bool passwordValidate(BuildContext context) {
     if (needPassword) {
 
+      // для упрощения валидации по паролю сделаем её через регулярное выражение
       RegExp passwordRegExp = RegExp(r'^[a-zA-Z0-9]{8,30}$');
 
       if (passwordController!.text.length < 8 || passwordController!.text.length > 30) {
@@ -148,7 +146,7 @@ class CustomFormValidator {
                 color: Colors.white,
                 fontSize: customFontSize,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'Montserrat', // Укажите название вашего шрифта
+                fontFamily: 'Montserrat',
               ),
             ),
             backgroundColor: Colors.red,
@@ -170,7 +168,7 @@ class CustomFormValidator {
                 color: Colors.white,
                 fontSize: customFontSize,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'Montserrat', // Укажите название вашего шрифта
+                fontFamily: 'Montserrat',
               ),
             ),
             backgroundColor: Colors.red,
@@ -189,7 +187,8 @@ class CustomFormValidator {
   bool compareValidator(BuildContext context) {
     if (needPassword && needConfirmPassword) {
       if (passwordController?.text != confirmPasswordController?.text) {
-        // Если не совпадают, выведем ошибку (можно использовать SnackBar)
+
+        // если не совпадают, выведем ошибку
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -199,7 +198,7 @@ class CustomFormValidator {
                 color: Colors.white,
                 fontSize: customFontSize,
                 fontWeight: FontWeight.w500,
-                fontFamily: 'Montserrat', // Укажите название вашего шрифта
+                fontFamily: 'Montserrat',
               ),
             ),
             backgroundColor: Colors.red,

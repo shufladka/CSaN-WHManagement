@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// класс с декорацией полей ввода
 class InputDecorationBuilder {
   static InputDecoration buildInputDecoration(BuildContext context, String hintText) {
     return InputDecoration(

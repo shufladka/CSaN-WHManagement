@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+// класс, предназначенный для взаимодействия с базой данных аутентификации (Firebase Authentication)
 class FirebaseAuthService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -47,6 +48,7 @@ class FirebaseAuthService {
         ),
       );
 
+      // возврат данных регистрируемого пользователя в базу аутентификации
       return credential.user;
 
     } catch (exc) {
@@ -83,6 +85,7 @@ class FirebaseAuthService {
       // попытка входа в аккаунт
       UserCredential credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
 
+      // возврат данных входящего пользователя в базу аутентификации
       return credential.user;
     }
     catch (exc) {
@@ -136,9 +139,9 @@ class FirebaseAuthService {
         ),
       );
 
-      User? user = _auth.currentUser;
-      return user;
+      return null;
 
+      // проброс ошибки в случае проблем со стороны сервиса Firebase Authentication
     } on FirebaseAuthException catch (exc) {
 
       // обработка ошибок создания аккаунта
@@ -169,7 +172,6 @@ class FirebaseAuthService {
   Future<bool> isItRightRole(String? rightRole) async {
 
     String? role = await _authService.getUserRole(_auth.currentUser!.uid);
-    print(role);
 
     return (role == rightRole);
   }
@@ -179,21 +181,23 @@ class FirebaseAuthService {
   Future<String?> getUserRole(String uid) async {
     try {
 
-      // проверяем, есть ли текущий пользователь
+      // проверяем, существует ли текущий пользователь в базе данных аутентификации
       User? currentUser = _auth.currentUser;
       if (currentUser == null) {
         print('Текущий пользователь не найден.');
         return null;
       }
 
-      // получаем документ пользователя из базы данных
+      // получаем документ пользователя из базы данных Firestore Database
       DocumentSnapshot userDoc = await _firestore.collection('users').doc(uid).get();
 
+      // проверяем коллекцию users на существование (в ней хранится таблица пользователей с их правами)
       if (userDoc.exists) {
 
         // роль пользователя хранится в поле 'role'
         String? userRole = userDoc['role'];
 
+        // проверяем поле 'role' на наличие в нем данных
         if (userRole != null) {
 
           // устанавливаем роль текущему пользователю (опционально)
@@ -217,10 +221,14 @@ class FirebaseAuthService {
   // получение роли пользователя по умолчанию из таблицы default_role
   Future<String?> getDefaultRole() async {
     try {
+
+      // получаем значение default_role из одноименной таблицы базы данных Firestore Database
       DocumentSnapshot defaultRoleDoc = await _firestore.collection('technical_information').doc('default_role').get();
 
+      // проверяем таблицу 'default_role' на существование
       if (defaultRoleDoc.exists) {
-        // роль хранится в поле 'default_role'
+
+        // возвращаем роль, хранимую в поле 'default_role'
         return defaultRoleDoc['default_role'];
       } else {
         print('Документ с ролями не найден.');
@@ -232,12 +240,15 @@ class FirebaseAuthService {
     }
   }
 
-  // Установка роли пользователя в таблице default_role
+  // установка роли пользователя в таблице default_role
   Future<void> setDefaultRole(String role) async {
     try {
+
+      // пробуем обновить значение поля default_role одноименной таблицы
       await _firestore.collection('technical_information').doc('default_role').update({
         'default_role': role,
       });
+
       print('Роль успешно обновлена в таблице default_role.');
     } catch (e) {
       print('Ошибка при обновлении роли в таблице default_role: $e');
@@ -247,24 +258,35 @@ class FirebaseAuthService {
   // проверка на принадлежность пользователя к привилегированной группе "Администратор"
   Future<bool> checkingForPrivileges(String rightRole) async {
     try {
-      // Получение результата проверки
-      bool isAdmin = await _authService.isItRightRole(rightRole);
 
+      // получение результата проверки
+      bool isAdmin = await _authService.isItRightRole(rightRole);
       return isAdmin;
+
+      // обработка ошибок при проверке привилегий
     } catch (e) {
-      // Обработка ошибок при проверке привилегий
       print('Checking privileges error: $e');
-      return false; // Возвращаем false в случае ошибки
+
+      // возвращаем false в случае ошибки
+      return false;
     }
   }
 
+  // получение почтового адреса текущего пользователя (необходимо для заполнения данных на странице 'lobby')
   Future<String> getCurrentUserEmail() async {
+
+    // получаем данные текущего пользователя из базы данных аутентификации
     User? user = _auth.currentUser;
 
+    // проверка переменной на наличие в ней данных
     if (user != null) {
-      return user.email ?? ''; // Возвращает email пользователя, если он есть
+
+      // возвращаем почтовый адрес пользователя, если он есть
+      return user.email ?? '';
     } else {
-      return ''; // Возвращаем пустую строку, если пользователь не вошел в систему
+
+      // возвращаем пустую строку, если пользователь не вошел в систему
+      return '';
     }
   }
 }

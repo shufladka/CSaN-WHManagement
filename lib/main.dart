@@ -1,6 +1,6 @@
 import 'package:csan/pages/admin_panel/admin_panel_page.dart';
 import 'package:csan/pages/admin_panel/set_default_role_page.dart';
-import 'package:csan/pages/home/lobby_test_page.dart';
+import 'package:csan/pages/home/lobby_page.dart';
 import 'package:csan/pages/home/orders_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'pages/auth/sign_in_page.dart';
 import 'pages/auth/sign_up_page.dart';
 import 'pages/auth/pass_reset_page.dart';
-import 'pages/home/lobby_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,10 +42,7 @@ class MyApp extends StatelessWidget {
               case 'pass_reset':
                 return const PassResetPage();
               case 'lobby':
-                return const LobbyTestPage();
-//                return const LobbyPage();
-//              case 'test':
-//                return const LobbyTestPage();
+                return const LobbyPage();
               case 'orders':
                 return const OrdersPage();
               case 'admin_panel':
@@ -68,25 +64,10 @@ class MyApp extends StatelessWidget {
 class MyNavigatorObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    // Проверка на переход из адресной строки
+
+    // проверка на переход из адресной строки
     if (previousRoute != null && route.settings.name != previousRoute.settings.name) {
       Navigator.of(route.navigator!.context).pop();
     }
-  }
-}
-
-// класс, который отключает анимации при переходе между страницами
-class NoTransitionsPageTransitionsBuilder extends PageTransitionsBuilder {
-  const NoTransitionsPageTransitionsBuilder();
-
-  @override
-  Widget buildTransitions<T>(
-      PageRoute<T> route,
-      BuildContext context,
-      Animation<double> animation,
-      Animation<double> secondaryAnimation,
-      Widget child,
-      ) {
-    return child; // Отключаем анимации
   }
 }

@@ -41,6 +41,32 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
     );
   }
 
+  // общий вид страницы панели администратора
+  Widget buildAdminPanelForm(BuildContext context) {
+    return Align(
+      alignment: const AlignmentDirectional(0.00, 0.00),
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        constraints: const BoxConstraints(
+          minWidth: 300,
+          maxWidth: 600,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+        ),
+        child: Align(
+          alignment: const AlignmentDirectional(0.00, 0.00),
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(32, 10, 32, 32),
+            child: buildAdminPanelContainer(context),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // контейнер с виджетами на странице панели администратора
   Widget buildAdminPanelContainer(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width,
@@ -50,12 +76,13 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
         maxWidth: 600,
       ),
       decoration: const BoxDecoration(
-        color: Colors.white, // Заменил на классический цвет
+        color: Colors.white,
       ),
       child: buildFormFields(context),
     );
   }
 
+  // форма виджетов на странице панели администратора
   Widget buildFormFields(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.max,
@@ -69,30 +96,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
     );
   }
 
-  Widget buildAdminPanelForm(BuildContext context) {
-    return Align(
-      alignment: const AlignmentDirectional(0.00, 0.00),
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        constraints: const BoxConstraints(
-          minWidth: 300,
-          maxWidth: 600,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white, // Use your desired color
-        ),
-        child: Align(
-          alignment: const AlignmentDirectional(0.00, 0.00),
-          child: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(32, 10, 32, 32),
-            child: buildAdminPanelContainer(context),
-          ),
-        ),
-      ),
-    );
-  }
-
+  // виджет текста "Панель администратора"
   Widget buildTitle(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0.00, 0.00),
@@ -111,6 +115,7 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
     );
   }
 
+  // виджет кнопки перехода на страницу редактирования прав новых пользователей
   Widget buildSetDefaultRolePageButton(BuildContext context) {
     return BuildButtonWidget(
       buttonText: 'ПРАВА НОВЫХ ПОЛЬЗОВАТЕЛЕЙ',
@@ -119,7 +124,8 @@ class _AdminPanelPageState extends State<AdminPanelPage> {
       },
     );
   }
-  
+
+  // виджет кнопки возврата на страницу лобби
   Widget buildLobbyPageButton(BuildContext context) {
     return BuildButtonWidget(
       buttonText: 'ВЕРНУТЬСЯ В ЛОББИ',
