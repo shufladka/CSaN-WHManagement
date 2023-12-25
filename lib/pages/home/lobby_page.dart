@@ -359,8 +359,14 @@ class _LobbyPageState extends State<LobbyPage> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
 
-          // отображаем заглушку в случае плохого соединения
-          return const CircularProgressIndicator();
+          // отображаем индикатор загрузки во время ожидания данных
+          return const Align(
+            alignment: AlignmentDirectional(1, 0),
+            child: Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(0, 0, 24, 0),
+              child: CircularProgressIndicator(),
+            ),
+          );
         } else {
           String email = snapshot.data ?? '';
 
@@ -390,8 +396,14 @@ class _LobbyPageState extends State<LobbyPage> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
 
-          // отображаем заглушку в случае плохого соединения
-          return const CircularProgressIndicator();
+          // отображаем индикатор загрузки во время ожидания данных
+          return const Align(
+            alignment: AlignmentDirectional(1, 0),
+            child: Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(0, 5, 24, 5),
+              child: CircularProgressIndicator(),
+            ),
+          );
         } else {
           String currentRole = snapshot.data ?? '';
 
@@ -555,7 +567,14 @@ class _LobbyPageState extends State<LobbyPage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
 
           // отображаем индикатор загрузки во время ожидания данных
-          return const CircularProgressIndicator();
+          return const Align(
+            alignment: AlignmentDirectional(1, 0),
+            child: Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
+              child: CircularProgressIndicator(),
+            ),
+          );
+
         } else {
           // Получаем значение number_of_orders из поля number_of_orders
           int numberOfOrders = snapshot.data?['number_of_orders'] ?? '';

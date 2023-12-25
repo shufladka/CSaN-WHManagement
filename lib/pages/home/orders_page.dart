@@ -673,7 +673,7 @@ class _OrdersPageState extends State<OrdersPage> {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          'BYN $amount',
+          '$amount BYN',
           textAlign: TextAlign.end,
           style: GoogleFonts.montserrat(
             color: const Color(0xFF15161E),
