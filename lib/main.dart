@@ -64,25 +64,10 @@ class MyApp extends StatelessWidget {
 class MyNavigatorObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    // Проверка на переход из адресной строки
+
+    // проверка на переход из адресной строки
     if (previousRoute != null && route.settings.name != previousRoute.settings.name) {
       Navigator.of(route.navigator!.context).pop();
     }
-  }
-}
-
-// класс, который отключает анимации при переходе между страницами
-class NoTransitionsPageTransitionsBuilder extends PageTransitionsBuilder {
-  const NoTransitionsPageTransitionsBuilder();
-
-  @override
-  Widget buildTransitions<T>(
-      PageRoute<T> route,
-      BuildContext context,
-      Animation<double> animation,
-      Animation<double> secondaryAnimation,
-      Widget child,
-      ) {
-    return child; // Отключаем анимации
   }
 }
