@@ -16,18 +16,25 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  final _formKey = GlobalKey<FormState>(); // Ключ формы
+
+  // инициализируем ключ формы
+  final _formKey = GlobalKey<FormState>();
+
+  // переменная для скрытия клавиатуры нажатием по пустому полю
+  final unfocusNode = FocusNode();
 
   FocusNode? emailFocusNode;
   TextEditingController? emailController;
 
   FocusNode? passwordFocusNode;
   TextEditingController? passwordController;
-  bool passwordVisibility = false; // Инициализируем поле passwordVisibility
 
   FocusNode? confirmPasswordFocusNode;
   TextEditingController? confirmPasswordController;
-  bool confirmPasswordVisibility = false; // Инициализируем поле confirmPasswordVisibility
+
+  // инициализируем поля passwordVisibility и confirmPasswordVisibility
+  bool passwordVisibility = false;
+  bool confirmPasswordVisibility = false;
 
   // значение чекбокса по умолчанию
   bool checkBoxDefaultState = false;
@@ -75,6 +82,9 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   void dispose() {
+    super.dispose();
+    unfocusNode.dispose();
+
     emailFocusNode?.dispose();
     emailController?.dispose();
 
@@ -83,28 +93,27 @@ class _SignUpPageState extends State<SignUpPage> {
 
     confirmPasswordFocusNode?.dispose();
     confirmPasswordController?.dispose();
-    
-    super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Title(
       title: 'Регистрация',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: Colors.white,
-
-        // используем форму для отрисовки страницы
-        body: Form(
-
-          // устанавливаем ключ формы
-          key: _formKey,
-          child: Align(
-            alignment: const AlignmentDirectional(0.00, 0.00),
-            child: SingleChildScrollView(
-              child: buildSignUpForm(context),
+      child: GestureDetector(
+        onTap: () => unfocusNode.canRequestFocus
+            ? FocusScope.of(context).requestFocus(unfocusNode)
+            : FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          key: scaffoldKey,
+          backgroundColor: Colors.white,
+          body: Form( // Используем форму
+            key: _formKey, // Устанавливаем ключ формы
+            child: Align(
+              alignment: const AlignmentDirectional(0.00, 0.00),
+              child: SingleChildScrollView(
+                child: buildSignUpForm(context),
+              ),
             ),
           ),
         ),
