@@ -23,7 +23,9 @@ class BuildButtonWidget extends StatelessWidget {
             backgroundColor: Colors.black87,
             elevation: 3,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8), // устанавливаем радиус закругления
+
+              // устанавливаем радиус закругления бортов кнопки
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
           child: Text(
@@ -62,7 +64,9 @@ class BuildExitButtonWidget extends StatelessWidget {
             backgroundColor: Colors.red[400],
             elevation: 3,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8), // устанавливаем радиус закругления
+
+              // устанавливаем радиус закругления бортов кнопки
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
           child: Text(

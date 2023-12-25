@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class PassResetPage extends StatefulWidget {
-  const PassResetPage({Key? key}) : super(key: key);
+  const PassResetPage({super.key});
 
   @override
   _PassResetPageState createState() => _PassResetPageState();
@@ -17,7 +17,6 @@ class _PassResetPageState extends State<PassResetPage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final unfocusNode = FocusNode();
   FocusNode? emailFocusNode;
   TextEditingController? emailController;
 
@@ -52,7 +51,6 @@ class _PassResetPageState extends State<PassResetPage> {
   @override
   void dispose() {
     super.dispose();
-    unfocusNode.dispose();
 
     emailFocusNode?.dispose();
     emailController?.dispose();
@@ -72,39 +70,36 @@ class _PassResetPageState extends State<PassResetPage> {
     return Title(
       title: 'Сброс пароля',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
-      child: GestureDetector(
-        onTap: () => unfocusNode.canRequestFocus
-            ? FocusScope.of(context).requestFocus(unfocusNode)
-            : FocusScope.of(context).unfocus(),
-        child: Scaffold(
-          key: scaffoldKey,
-          backgroundColor: Colors.white,
-          body: Align(
-            alignment: const AlignmentDirectional(0.00, 0.00),
-            child: SingleChildScrollView(
-              child: buildSignInForm(context),
-            ),
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: Colors.white,
+        body: Align(
+          alignment: const AlignmentDirectional(0.00, 0.00),
+          child: SingleChildScrollView(
+            child: buildPassResetForm(context),
           ),
         ),
       ),
     );
   }
 
-  Widget buildSignInContainer(BuildContext context) {
+  // контейнер с содержимым страницы сброса пароля
+  Widget buildPassResetContainer(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height * 1,
+      height: MediaQuery.of(context).size.height,
       constraints: const BoxConstraints(
         minWidth: 300,
         maxWidth: 600,
       ),
       decoration: const BoxDecoration(
-        color: Colors.white, // Заменил на классический цвет
+        color: Colors.white,
       ),
       child: buildFormFields(context),
     );
   }
 
+  // содержимое формы страницы сброса пароля
   Widget buildFormFields(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.max,
@@ -119,7 +114,8 @@ class _PassResetPageState extends State<PassResetPage> {
     );
   }
 
-  Widget buildSignInForm(BuildContext context) {
+  // форма страницы сброса пароля
+  Widget buildPassResetForm(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0.00, 0.00),
       child: Container(
@@ -136,13 +132,14 @@ class _PassResetPageState extends State<PassResetPage> {
           alignment: const AlignmentDirectional(0.00, 0.00),
           child: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(32, 10, 32, 32),
-            child: buildSignInContainer(context),
+            child: buildPassResetContainer(context),
           ),
         ),
       ),
     );
   }
 
+  // текстовое поле заголовка страницы сброса пароля
   Widget buildTitle(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0.00, 0.00),
@@ -161,6 +158,7 @@ class _PassResetPageState extends State<PassResetPage> {
     );
   }
 
+  // виджет поля ввода почтового адреса для отправки на него формы восстановления пароля
   Widget buildEmailField(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
@@ -169,7 +167,6 @@ class _PassResetPageState extends State<PassResetPage> {
         focusNode: emailFocusNode,
         textCapitalization: TextCapitalization.none,
         obscureText: false,
-        // decoration: buildInputDecoration(context, 'почтовый адрес, на который был зарегистрирован аккаунт'),
         decoration: InputDecorationBuilder.buildInputDecoration(context, 'почтовый адрес'),
         style: GoogleFonts.montserrat(
           fontSize: 15,
@@ -181,6 +178,7 @@ class _PassResetPageState extends State<PassResetPage> {
     );
   }
 
+  // виджет кнопки отправки формы в базу данных аутентификации
   Widget buildSubmitButton(BuildContext context) {
 
     // экземпляр класса валидации формы регистрации нового пользователя
@@ -195,7 +193,7 @@ class _PassResetPageState extends State<PassResetPage> {
     return BuildButtonWidget(
       buttonText: 'ОТПРАВИТЬ ПАРОЛЬ',
       onPressed: () {
-        // Вызываем метод для валидации формы регистрации
+        
         // если форма валидна, переходим к странице входа в аккаунт
         if (formValidator.validateForm(context)) {
           _passwordReset();
@@ -204,6 +202,7 @@ class _PassResetPageState extends State<PassResetPage> {
     );
   }
 
+  // кнопка возврата на страницу входа в приложение
   Widget buildReturnButton(BuildContext context) {
     return BuildExitButtonWidget(
       buttonText: 'ВЕРНУТЬСЯ',

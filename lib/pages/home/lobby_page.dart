@@ -20,10 +20,11 @@ class _LobbyPageState extends State<LobbyPage> {
   late final FirebaseAuth _auth = FirebaseAuth.instance;
   late final FirebaseFirestore _database = FirebaseFirestore.instance;
 
+  // инициализация переменных для хранения имен прав привилегированных пользователей
   String adminRole = 'administrator';
   String salespersonRole = 'salesperson';
 
-  // подключение к базе данных Firebase
+  // подключение к базе данных Firestore Database
   void initFirebase() async {
     WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp();
@@ -41,12 +42,12 @@ class _LobbyPageState extends State<LobbyPage> {
     super.dispose();
   }
 
-  // Метод для вызова удаления сохраненных данных
+  // метод для удаления сохраненных данных
   Future<void> _clearSavedData() async {
     await ClearUserData().clearSavedData();
   }
 
-  // Вызов метода для очистки сохраненных данных и выхода из аккаунта
+  // метод для очистки сохраненных данных и выхода из аккаунта
   void _clearUserData() async {
     await FirebaseAuth.instance.signOut();
     Navigator.pushReplacementNamed(context, "sign_in");
@@ -80,37 +81,45 @@ class _LobbyPageState extends State<LobbyPage> {
   // проверка на привилегированную роль пользователя
   FutureBuilder<bool> checkingForPrivilegedRole(BuildContext context) {
     return FutureBuilder<bool>(
-      future: _authService.isItRightRole(adminRole), // Проверка adminRole
+
+      // проверка на принадлежность пользователя к привилегии "Администратор"
+      future: _authService.isItRightRole(adminRole),
       builder: (context, adminSnapshot) {
         if (adminSnapshot.connectionState == ConnectionState.waiting) {
-          // Показываем анимацию загрузки, если привилегированная роль не обнаружена
+
+          // показываем анимацию загрузки, если привилегированная роль не обнаружена
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        // Проверяем результат и строим виджеты в зависимости от него
+        // проверяем результат и строим страницу в соответствии с привилегией
         if (adminSnapshot.data == true) {
-          // Если привилегированная роль adminRole обнаружена, показываем полную страницу
+
+          // если привилегированная роль "Администратор" обнаружена, показываем полную страницу
           return buildFullPage(context);
         } else {
-          // Если привилегированная роль adminRole не обнаружена, проверяем salespersonRole
+
+          // если привилегированная роль "Администратор" не обнаружена, проверяем на принадлежность к привилегии "Продавец"
           return FutureBuilder<bool>(
             future: _authService.isItRightRole(salespersonRole),
             builder: (context, salespersonSnapshot) {
               if (salespersonSnapshot.connectionState == ConnectionState.waiting) {
-                // Показываем анимацию загрузки, если привилегированная роль не обнаружена
+
+                // показываем анимацию загрузки, если привилегированная роль не обнаружена
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
               }
 
-              // Проверяем результат и строим виджеты в зависимости от него
+              // проверяем результат и строим страницу в соответствии с привилегией
               if (salespersonSnapshot.data == true) {
-                // Если привилегированная роль salespersonRole обнаружена, показываем полную страницу
+
+                // если привилегированная роль "Продавец" обнаружена, показываем страницу без кнопки входа в панель администратора
                 return buildPageWithoutAdminPanelButton(context);
               } else {
-                // Если ни adminRole, ни salespersonRole не обнаружены, показываем страницу без кнопки создания нового заказа
+
+                // если привилегии не обнаружены, показываем страницу с просьбой обратиться к администратору
                 return buildPageWithoutAnythingButton(context);
               }
             },
@@ -119,7 +128,6 @@ class _LobbyPageState extends State<LobbyPage> {
       },
     );
   }
-
 
   // отрисовка страницы меню для пользователя с полным доступом
   Widget buildFullPage(BuildContext context) {
@@ -258,6 +266,7 @@ class _LobbyPageState extends State<LobbyPage> {
     );
   }
 
+  // виджет кнопки для удаления сохраненных данных пользователя
   Widget buildClearUserDataButton(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0, 0),
@@ -273,7 +282,9 @@ class _LobbyPageState extends State<LobbyPage> {
             backgroundColor: Colors.red[700],
             elevation: 3,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8), // устанавливаем радиус закругления
+
+              // устанавливаем радиус закругления бортов кнопки
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
           child: Text(
@@ -289,6 +300,7 @@ class _LobbyPageState extends State<LobbyPage> {
     );
   }
 
+  // виджет кнопки для возврата на страницу входа в приложение
   Widget buildReturnButton(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0, 0),
@@ -304,7 +316,9 @@ class _LobbyPageState extends State<LobbyPage> {
             backgroundColor: Colors.black87,
             elevation: 3,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8), // устанавливаем радиус закругления
+
+              // устанавливаем радиус закругления
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
           child: Text(
@@ -336,7 +350,9 @@ class _LobbyPageState extends State<LobbyPage> {
             backgroundColor: Colors.black87,
             elevation: 3,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8), // устанавливаем радиус закругления
+
+              // устанавливаем радиус закругления
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
           child: Text(
@@ -576,7 +592,8 @@ class _LobbyPageState extends State<LobbyPage> {
           );
 
         } else {
-          // Получаем значение number_of_orders из поля number_of_orders
+
+          // получаем значение number_of_orders из поля таблицы number_of_orders коллекции technical_information
           int numberOfOrders = snapshot.data?['number_of_orders'] ?? '';
 
           return Align(

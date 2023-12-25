@@ -115,21 +115,14 @@ class _CreateOrderDialogState extends State<CreateOrderDialog> {
         ElevatedButton(
           onPressed: () async {
 
-            /*
-            // Получаем текущее количество записей
-            QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('orders').get();
-            int currentOrderNumber = snapshot.size + 1;
-
-             */
-
-            // Получаем текущее количество заказов из документа number_of_orders коллекции technical_information
+            // получаем текущее количество заказов из документа number_of_orders коллекции technical_information
             DocumentSnapshot techInfoSnapshot = await FirebaseFirestore.instance.collection('technical_information').doc('number_of_orders').get();
             int currentOrderNumber = techInfoSnapshot['number_of_orders'];
 
-            // Увеличиваем количество заказов на 1
+            // увеличиваем количество заказов на 1
             currentOrderNumber++;
 
-            // Обновляем количество заказов в документе number_of_orders коллекции technical_information
+            // обновляем количество заказов в документе number_of_orders коллекции technical_information
             await FirebaseFirestore.instance.collection('technical_information').doc('number_of_orders').update({
               'number_of_orders': currentOrderNumber,
             });
@@ -149,11 +142,14 @@ class _CreateOrderDialogState extends State<CreateOrderDialog> {
               'weight': weight,
             });
 
-            Navigator.pop(context); // Закрыть диалог
+            // закрываем диалоговое окно
+            Navigator.pop(context);
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.black87,
-            fixedSize: Size.fromWidth(MediaQuery.of(context).size.width), // Выравнивание по ширине
+
+            // выравниваем кнопку по ширине
+            fixedSize: Size.fromWidth(MediaQuery.of(context).size.width),
           ),
           child: Text(
             'СОХРАНИТЬ ИЗМЕНЕНИЯ',
@@ -314,7 +310,8 @@ class _EditOrderDialogState extends State<EditOrderDialog> {
         const SizedBox(height: 20),
         ElevatedButton(
           onPressed: () async {
-            // Обновляем данные заказа по его ID
+
+            // обновляем данные заказа по его ID
             await FirebaseFirestore.instance.collection('orders').doc(docID).update({
               'amount': amount,
               'date': DateFormat('dd.MM.yyyy | HH:mm:ss').format(DateTime.now()),
@@ -322,7 +319,8 @@ class _EditOrderDialogState extends State<EditOrderDialog> {
               'weight': weight,
             });
 
-            Navigator.pop(context); // Закрыть диалог
+            // закрываем диалоговое окно
+            Navigator.pop(context);
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.black87,
@@ -348,13 +346,17 @@ class _EditOrderDialogState extends State<EditOrderDialog> {
         const SizedBox(height: 20),
         ElevatedButton(
           onPressed: () async {
-            // Удаляем заказ по его ID
+
+            // удаляем заказ по его ID
             await FirebaseFirestore.instance.collection('orders').doc(docID).delete();
 
-            Navigator.pop(context); // Закрыть диалог
+            // закрываем диалоговое окно
+            Navigator.pop(context);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red, // Красный цвет для кнопки удаления
+
+            // устанавливаем красный цвет для кнопки удаления
+            backgroundColor: Colors.red,
             fixedSize: Size.fromWidth(MediaQuery.of(context).size.width),
           ),
           child: Text(
@@ -463,21 +465,20 @@ class _EditOrderStateDialogState extends State<EditOrderStateDialog> {
         const SizedBox(height: 20),
         ElevatedButton(
           onPressed: () async {
-            // Обновляем данные заказа по его ID
+
+            // обновляем данные заказа по его ID
             await FirebaseFirestore.instance.collection('orders')
                 .doc(docID)
                 .update({
               'state': state,
             });
 
-            Navigator.pop(context); // Закрыть диалог
+            // закрываем диалоговое окно
+            Navigator.pop(context);
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.black87,
-            fixedSize: Size.fromWidth(MediaQuery
-                .of(context)
-                .size
-                .width),
+            fixedSize: Size.fromWidth(MediaQuery.of(context).size.width),
           ),
           child: Text(
             'СОХРАНИТЬ ИЗМЕНЕНИЯ',

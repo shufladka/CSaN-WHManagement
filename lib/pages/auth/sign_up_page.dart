@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:csan/service/auth/firebase_auth_service.dart';
 
 class SignUpPage extends StatefulWidget {
-  const SignUpPage({Key? key}) : super(key: key);
+  const SignUpPage({super.key});
 
   @override
   _SignUpPageState createState() => _SignUpPageState();
@@ -17,8 +17,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final _formKey = GlobalKey<FormState>(); // Ключ формы
-
-  final unfocusNode = FocusNode();
 
   FocusNode? emailFocusNode;
   TextEditingController? emailController;
@@ -77,8 +75,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   void dispose() {
-    unfocusNode.dispose();
-
     emailFocusNode?.dispose();
     emailController?.dispose();
 
@@ -96,20 +92,19 @@ class _SignUpPageState extends State<SignUpPage> {
     return Title(
       title: 'Регистрация',
       color: Theme.of(context).primaryColor.withAlpha(0XFF),
-      child: GestureDetector(
-        onTap: () => unfocusNode.canRequestFocus
-            ? FocusScope.of(context).requestFocus(unfocusNode)
-            : FocusScope.of(context).unfocus(),
-        child: Scaffold(
-          key: scaffoldKey,
-          backgroundColor: Colors.white,
-          body: Form( // Используем форму
-            key: _formKey, // Устанавливаем ключ формы
-            child: Align(
-              alignment: const AlignmentDirectional(0.00, 0.00),
-              child: SingleChildScrollView(
-                child: buildSignUpForm(context),
-              ),
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: Colors.white,
+
+        // используем форму для отрисовки страницы
+        body: Form(
+
+          // устанавливаем ключ формы
+          key: _formKey,
+          child: Align(
+            alignment: const AlignmentDirectional(0.00, 0.00),
+            child: SingleChildScrollView(
+              child: buildSignUpForm(context),
             ),
           ),
         ),
@@ -117,6 +112,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  // контейнер с содержимым страницы регистрации
   Widget buildSignUpContainer(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width,
@@ -126,13 +122,13 @@ class _SignUpPageState extends State<SignUpPage> {
         maxWidth: 600,
       ),
       decoration: const BoxDecoration(
-        color: Colors.white, // Заменил на классический цвет
+        color: Colors.white,
       ),
       child: buildFormFields(context),
     );
   }
 
-
+  // форма страницы регистрации с её полями
   Widget buildFormFields(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.max,
@@ -149,6 +145,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  // общий вид страницы регистрации
   Widget buildSignUpForm(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0.00, 0.00),
@@ -160,7 +157,7 @@ class _SignUpPageState extends State<SignUpPage> {
           maxWidth: 600,
         ),
         decoration: const BoxDecoration(
-          color: Colors.white, // Use your desired color
+          color: Colors.white,
         ),
         child: Align(
           alignment: const AlignmentDirectional(0.00, 0.00),
@@ -173,6 +170,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  // виджет с заголовком страницы регистрации
   Widget buildTitle(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0.00, 0.00),
@@ -191,6 +189,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  // виджет поля ввода почтового адреса регистрируемого пользователя
   Widget buildEmailField(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
@@ -210,6 +209,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  // виджет ввода пароля регистрируемого пользователя
   Widget buildPasswordField(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
@@ -228,6 +228,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  // виджет ввода пароля подтверждения регистрируемого пользователя
   Widget buildConfirmPasswordField(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
@@ -246,6 +247,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  // декоратор поля пароля
   InputDecoration buildPasswordInputDecoration(BuildContext context) {
     return InputDecoration(
       hintText: 'пароль',
@@ -296,6 +298,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  // декоратор ввода подтверждения пароля
   InputDecoration buildConfirmPasswordInputDecoration(BuildContext context) {
     return InputDecoration(
       hintText: 'подтвердите пароль',

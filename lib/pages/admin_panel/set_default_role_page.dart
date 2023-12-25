@@ -8,17 +8,15 @@ class SetDefaultRolePage extends StatefulWidget {
   const SetDefaultRolePage({super.key});
 
   @override
-  _SetDefaultRolePageState createState() => _SetDefaultRolePageState();
+  SetDefaultRolePageState createState() => SetDefaultRolePageState();
 }
 
-class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
+class SetDefaultRolePageState extends State<SetDefaultRolePage> {
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   FocusNode? roleFocusNode;
   TextEditingController? roleController;
-
-  final unfocusNode = FocusNode();
 
   final FirebaseAuthService _auth = FirebaseAuthService();
   String currentDefaultRole = '';
@@ -48,12 +46,6 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
 
     roleController ??= TextEditingController();
     roleFocusNode ??= FocusNode();
-
-    unfocusNode.addListener(() {
-      if (unfocusNode.hasFocus) {
-        unfocusNode.unfocus();
-      }
-    });
   }
 
   @override
@@ -62,8 +54,6 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
 
     roleFocusNode?.dispose();
     roleController?.dispose();
-
-    unfocusNode.dispose();
   }
 
   @override
@@ -74,62 +64,21 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
           .of(context)
           .primaryColor
           .withAlpha(0XFF),
-      child: GestureDetector(
-        onTap: () =>
-        unfocusNode.canRequestFocus
-            ? FocusScope.of(context).requestFocus(unfocusNode)
-            : FocusScope.of(context).unfocus(),
-        child: Scaffold(
-          key: scaffoldKey,
-          backgroundColor: Colors.white,
-          body: Align(
-            alignment: const AlignmentDirectional(0.00, 0.00),
-            child: SingleChildScrollView(
-              child: buildSignInForm(context),
-            ),
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: Colors.white,
+        body: Align(
+          alignment: const AlignmentDirectional(0.00, 0.00),
+          child: SingleChildScrollView(
+            child: buildSetDefaultRoleForm(context),
           ),
         ),
       ),
     );
   }
 
-  Widget buildSignInContainer(BuildContext context) {
-    return Container(
-      width: MediaQuery
-          .of(context)
-          .size
-          .width,
-      height: MediaQuery
-          .of(context)
-          .size
-          .height,
-      constraints: const BoxConstraints(
-        minWidth: 300,
-        maxWidth: 600,
-      ),
-      decoration: const BoxDecoration(
-        color: Colors.white, // Заменил на классический цвет
-      ),
-      child: buildFormFields(context),
-    );
-  }
-
-  Widget buildFormFields(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        buildTitle(context),
-        buildDefaultRoleField(context),
-        buildSetDefaultRoleButton(context),
-        buildAdminPanelPageButton(context),
-        //getDisplayCurrentUserNameButton(context),
-      ],
-    );
-  }
-
-  Widget buildSignInForm(BuildContext context) {
+  // общий вид страницы редактирования роли новых пользователей
+  Widget buildSetDefaultRoleForm(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0.00, 0.00),
       child: Container(
@@ -146,19 +95,57 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
           maxWidth: 600,
         ),
         decoration: const BoxDecoration(
-          color: Colors.white, // Use your desired color
+          color: Colors.white,
         ),
         child: Align(
           alignment: const AlignmentDirectional(0.00, 0.00),
           child: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(32, 10, 32, 32),
-            child: buildSignInContainer(context),
+            child: buildSetDefaultRoleContainer(context),
           ),
         ),
       ),
     );
   }
 
+  // контейнер с содержимым страницы редактирования роли новых пользователей
+  Widget buildSetDefaultRoleContainer(BuildContext context) {
+    return Container(
+      width: MediaQuery
+          .of(context)
+          .size
+          .width,
+      height: MediaQuery
+          .of(context)
+          .size
+          .height,
+      constraints: const BoxConstraints(
+        minWidth: 300,
+        maxWidth: 600,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+      ),
+      child: buildFormFields(context),
+    );
+  }
+
+  // форма виджетов на странице редактирования роли новых пользователей
+  Widget buildFormFields(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        buildTitle(context),
+        buildDefaultRoleField(context),
+        buildSetDefaultRoleButton(context),
+        buildAdminPanelPageButton(context),
+      ],
+    );
+  }
+
+  // форма виджетов на странице редактирования роли новых пользователей
   Widget buildTitle(BuildContext context) {
     return Align(
       alignment: const AlignmentDirectional(0.00, 0.00),
@@ -177,12 +164,11 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
     );
   }
 
+  // виджет с полем ввода новой роли новых пользователей
   Widget buildDefaultRoleField(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 16),
       child: TextFormField(
-        controller: roleController,
-        focusNode: roleFocusNode,
         textCapitalization: TextCapitalization.none,
         decoration: buildDefaultRoleFieldInputDecoration(context),
         style: GoogleFonts.montserrat(
@@ -194,6 +180,7 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
     );
   }
 
+  // декоратор поля ввода новой роли новых пользователей
   InputDecoration buildDefaultRoleFieldInputDecoration(BuildContext context) {
     return InputDecoration(
       hintText: 'роль по умолчанию: $currentDefaultRole',
@@ -233,6 +220,7 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
     );
   }
 
+  // кнопка для отправки формы с новой ролью в базу данных
   Widget buildSetDefaultRoleButton(BuildContext context) {
     return BuildButtonWidget(
       buttonText: 'УСТАНОВИТЬ НОВУЮ РОЛЬ ПО УМОЛЧАНИЮ',
@@ -242,6 +230,7 @@ class _SetDefaultRolePageState extends State<SetDefaultRolePage> {
     );
   }
 
+  // кнопка для возврата на страницу панели администратора
   Widget buildAdminPanelPageButton(BuildContext context) {
     return BuildButtonWidget(
       buttonText: 'ВЕРНУТЬСЯ В ПАНЕЛЬ АДМИНИСТРАТОРА',
