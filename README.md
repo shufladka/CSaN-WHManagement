@@ -1,4 +1,4 @@
-# csan
+# CSaN-WHManagement
 
 my course project (:
 
