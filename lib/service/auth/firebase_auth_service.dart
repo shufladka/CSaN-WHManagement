@@ -255,7 +255,7 @@ class FirebaseAuthService {
     }
   }
 
-  // проверка на принадлежность пользователя к привилегированной группе "Администратор"
+  // проверка на принадлежность пользователя к привилегированной группе
   Future<bool> checkingForPrivileges(String rightRole) async {
     try {
 
