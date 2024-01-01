@@ -62,7 +62,7 @@ class SetDefaultRolePageState extends State<SetDefaultRolePage> {
   @override
   Widget build(BuildContext context) {
     return Title(
-      title: 'Настройка прав по умолчанию',
+      title: 'Настройка прав',
       color: Theme
           .of(context)
           .primaryColor
